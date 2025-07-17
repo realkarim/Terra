@@ -1,4 +1,4 @@
-package com.realkarim.terra.navigation
+package com.realkarim.navigation
 
 sealed interface NavigationEvent {
 

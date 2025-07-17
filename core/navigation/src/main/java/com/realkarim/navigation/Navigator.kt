@@ -1,4 +1,4 @@
-package com.realkarim.terra.navigation
+package com.realkarim.navigation
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow

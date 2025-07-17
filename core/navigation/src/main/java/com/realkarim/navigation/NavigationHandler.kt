@@ -1,4 +1,4 @@
-package com.realkarim.terra.navigation
+package com.realkarim.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

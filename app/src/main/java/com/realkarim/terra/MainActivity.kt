@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.compose.rememberNavController
-import com.realkarim.terra.navigation.HandleNavigation
-import com.realkarim.terra.navigation.Navigator
+import com.realkarim.navigation.HandleNavigation
+import com.realkarim.navigation.Navigator
 import com.realkarim.terra.navigation.TerraNavHost
 import com.realkarim.terra.theme.TerraTheme
 
