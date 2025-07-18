@@ -1,4 +1,4 @@
-package com.realkarim.navigation
+package com.realkarim.terra.navigation
 
 sealed interface NavigationEvent {
 
@@ -6,5 +6,5 @@ sealed interface NavigationEvent {
 
     data object ToHome : NavigationEvent
 
-    data object ToLogin : NavigationEvent
+    data object ToDetails : NavigationEvent
 }

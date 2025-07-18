@@ -21,7 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Terra"
 include(":app")
-include(":core:navigation")
 include(":feature:welcome")
 include(":feature:home")
 include(":feature:details")

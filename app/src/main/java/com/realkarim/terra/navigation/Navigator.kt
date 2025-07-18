@@ -1,4 +1,4 @@
-package com.realkarim.navigation
+package com.realkarim.terra.navigation
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,7 +11,7 @@ class Navigator {
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    internal val navigationEventFlow = _navigationEventFlow.asSharedFlow()
+    val navigationEventFlow = _navigationEventFlow.asSharedFlow()
 
     fun navigate(event: NavigationEvent) {
         _navigationEventFlow.tryEmit(event)

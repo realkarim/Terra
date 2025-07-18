@@ -1,8 +1,10 @@
-package com.realkarim.navigation
+package com.realkarim.terra.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
+import com.realkarim.details.presentation.navigateToDetails
+import com.realkarim.home.presentation.navigateToHome
 
 @Composable
 fun HandleNavigation(
@@ -14,15 +16,15 @@ fun HandleNavigation(
 
             when (event) {
                 NavigationEvent.Up -> {
-
+                    navController.navigateUp()
                 }
 
                 NavigationEvent.ToHome -> {
-
+                    navController.navigateToHome()
                 }
 
-                NavigationEvent.ToLogin -> {
-
+                NavigationEvent.ToDetails -> {
+                    navController.navigateToDetails()
                 }
             }
         }

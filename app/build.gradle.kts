@@ -42,8 +42,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:navigation"))
     implementation(project(":feature:welcome"))
+    implementation(project(":feature:home"))
+    implementation(project(":feature:details"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
