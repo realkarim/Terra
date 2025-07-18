@@ -35,6 +35,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:navigation"))
+
+    implementation(libs.coil.compose)
     // KAPT
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
