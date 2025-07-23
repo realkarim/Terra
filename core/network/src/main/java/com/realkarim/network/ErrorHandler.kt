@@ -1,6 +1,7 @@
 package com.realkarim.network
 
 import com.google.gson.Gson
+import com.realkarim.network.model.ErrorResponse
 
 fun getDefaultErrorResponse() = ErrorResponse("", "", emptyList())
 

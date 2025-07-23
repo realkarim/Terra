@@ -1,6 +1,8 @@
 package com.realkarim.network
 
 import com.google.gson.Gson
+import com.realkarim.domain.Outcome
+import com.realkarim.network.model.ErrorResponse
 import retrofit2.Response
 
 class NetworkDataSource<SERVICE>(

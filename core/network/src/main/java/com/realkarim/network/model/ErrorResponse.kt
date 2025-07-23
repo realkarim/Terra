@@ -1,4 +1,4 @@
-package com.realkarim.network
+package com.realkarim.network.model
 
 import com.google.gson.annotations.SerializedName
 
