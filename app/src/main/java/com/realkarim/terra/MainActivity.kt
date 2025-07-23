@@ -8,7 +8,9 @@ import com.realkarim.terra.navigation.HandleNavigation
 import com.realkarim.terra.navigation.Navigator
 import com.realkarim.terra.navigation.TerraNavHost
 import com.realkarim.terra.theme.TerraTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
