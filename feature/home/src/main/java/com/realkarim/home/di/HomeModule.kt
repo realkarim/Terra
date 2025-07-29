@@ -23,7 +23,7 @@ const val BASE_URL = "https://www.apicountries.com/"
 class HomeModule {
     @Provides
     @Singleton
-    fun provideLoginServiceFactory(serviceFactory: ServiceFactory): CountryService {
+    fun provideCountryServiceFactory(serviceFactory: ServiceFactory): CountryService {
         return serviceFactory.create(CountryService::class.java, BASE_URL)
     }
 
