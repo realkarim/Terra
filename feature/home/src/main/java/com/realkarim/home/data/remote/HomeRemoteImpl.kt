@@ -1,8 +1,8 @@
 package com.realkarim.home.data.remote
 
+import com.realkarim.data.model.CountryDto
+import com.realkarim.data.service.CountryService
 import com.realkarim.domain.Outcome
-import com.realkarim.home.data.model.CountryDto
-import com.realkarim.home.data.network.CountryService
 import com.realkarim.network.NetworkDataSource
 import com.realkarim.network.model.ErrorResponse
 import javax.inject.Inject

@@ -2,15 +2,19 @@ package com.realkarim.details.presentation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -18,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.realkarim.domain.model.Country
 
@@ -26,14 +31,37 @@ fun DetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: DetailsViewModel = hiltViewModel()
 ) {
-//    DetailsScreen(
-//        country = country,
-//        modifier = modifier
-//    )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    DetailsScreen(
+        uiState = uiState,
+        modifier = modifier
+    )
 }
 
 @Composable
 private fun DetailsScreen(
+    uiState: DetailsViewModel.UiState,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        modifier = modifier,
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { innerPaddings ->
+        when (uiState) {
+            is DetailsViewModel.UiState.Loading -> {}
+            is DetailsViewModel.UiState.Success -> Details(
+                country = uiState.country,
+                modifier = Modifier.padding(innerPaddings)
+            )
+
+            is DetailsViewModel.UiState.Error -> {}
+        }
+    }
+}
+
+@Composable
+private fun Details(
     country: Country,
     modifier: Modifier = Modifier
 ) {
@@ -119,21 +147,23 @@ private fun DetailsScreen(
 @Composable
 private fun DetailsScreenPreview() {
     DetailsScreen(
-        country = Country(
-            name = "Testland",
-            capital = "Test City",
-            region = "Test Region",
-            subregion = "Test Subregion",
-            nativeName = "Test Native Name",
-            callingCodes = listOf("123"),
-            population = 1000000,
-            area = 12345.67,
-            flagUrl = "https://example.com/flag.png",
-            timezones = listOf("UTC+0"),
-            borders = listOf("Country A", "Country B"),
-            currencies = listOf(),
-            languages = listOf(),
-            regionalBlocs = listOf()
+        uiState = DetailsViewModel.UiState.Success(
+            Country(
+                name = "Testland",
+                capital = "Test City",
+                region = "Test Region",
+                subregion = "Test Subregion",
+                nativeName = "Test Native Name",
+                callingCodes = listOf("123"),
+                population = 1000000,
+                area = 12345.67,
+                flagUrl = "https://example.com/flag.png",
+                timezones = listOf("UTC+0"),
+                borders = listOf("Country A", "Country B"),
+                currencies = listOf(),
+                languages = listOf(),
+                regionalBlocs = listOf()
+            )
         )
     )
 }

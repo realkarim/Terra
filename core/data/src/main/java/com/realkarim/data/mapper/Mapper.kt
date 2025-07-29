@@ -1,9 +1,9 @@
-package com.realkarim.home.data.mapper
+package com.realkarim.data.mapper
 
-import com.realkarim.home.data.model.CountryDto
-import com.realkarim.home.data.model.CurrencyDto
-import com.realkarim.home.data.model.LanguageDto
-import com.realkarim.home.data.model.RegionalBlocDto
+import com.realkarim.data.model.CountryDto
+import com.realkarim.data.model.CurrencyDto
+import com.realkarim.data.model.LanguageDto
+import com.realkarim.data.model.RegionalBlocDto
 import com.realkarim.domain.model.Country
 import com.realkarim.domain.model.Currency
 import com.realkarim.domain.model.Language

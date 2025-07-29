@@ -1,7 +1,7 @@
 package com.realkarim.home.di
 
 import com.google.gson.Gson
-import com.realkarim.home.data.network.CountryService
+import com.realkarim.data.service.CountryService
 import com.realkarim.home.data.remote.HomeRemote
 import com.realkarim.home.data.remote.HomeRemoteImpl
 import com.realkarim.home.data.repository.HomeRepositoryImpl
