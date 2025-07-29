@@ -3,7 +3,7 @@ package com.realkarim.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realkarim.domain.Outcome
-import com.realkarim.home.domain.model.Country
+import com.realkarim.domain.model.Country
 import com.realkarim.home.domain.usecase.GetPopularCountriesUseCase
 import com.realkarim.home.presentation.HomeViewModel.UiState.Error
 import com.realkarim.home.presentation.HomeViewModel.UiState.Success

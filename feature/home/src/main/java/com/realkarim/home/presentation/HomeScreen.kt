@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.realkarim.home.domain.model.Country
+import com.realkarim.domain.model.Country
 
 @Composable
 fun HomeScreen(

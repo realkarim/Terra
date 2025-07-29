@@ -4,10 +4,10 @@ import com.realkarim.home.data.model.CountryDto
 import com.realkarim.home.data.model.CurrencyDto
 import com.realkarim.home.data.model.LanguageDto
 import com.realkarim.home.data.model.RegionalBlocDto
-import com.realkarim.home.domain.model.Country
-import com.realkarim.home.domain.model.Currency
-import com.realkarim.home.domain.model.Language
-import com.realkarim.home.domain.model.RegionalBloc
+import com.realkarim.domain.model.Country
+import com.realkarim.domain.model.Currency
+import com.realkarim.domain.model.Language
+import com.realkarim.domain.model.RegionalBloc
 
 fun CountryDto.toDomain(): Country = Country(
     name = name.orEmpty(),

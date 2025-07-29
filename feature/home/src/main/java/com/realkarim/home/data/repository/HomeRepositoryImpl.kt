@@ -4,7 +4,7 @@ import com.realkarim.domain.Outcome
 import com.realkarim.home.data.mapper.toDomain
 import com.realkarim.home.data.model.CountryDto
 import com.realkarim.home.data.remote.HomeRemote
-import com.realkarim.home.domain.model.Country
+import com.realkarim.domain.model.Country
 import com.realkarim.home.domain.repository.HomeRepository
 import com.realkarim.network.model.ErrorResponse
 

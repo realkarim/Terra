@@ -1,5 +1,8 @@
-package com.realkarim.home.domain.model
+package com.realkarim.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Country(
     val name: String,
     val callingCodes: List<String>,
