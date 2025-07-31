@@ -3,7 +3,7 @@ package com.realkarim.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realkarim.country.model.Country
-import com.realkarim.domain.Outcome
+import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.home.domain.usecase.GetPopularCountriesUseCase
 import com.realkarim.home.presentation.HomeViewModel.UiState.Error
 import com.realkarim.home.presentation.HomeViewModel.UiState.Success
@@ -39,9 +39,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val result = getPopularCountriesUseCase()
             when (result) {
-                is Outcome.Success -> _uiState.update { Success(result.data) }
-                is Outcome.Error -> _uiState.update { Error("Error Loading Countries") }
-                is Outcome.Empty -> _uiState.update { Error("Empty Response") }
+                is DomainOutcome.Success -> _uiState.update { Success(result.data) }
+                is DomainOutcome.Error -> _uiState.update { Error("Error Loading Countries") }
+                is DomainOutcome.Empty -> _uiState.update { Error("Empty Response") }
             }
         }
     }

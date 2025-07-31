@@ -37,9 +37,9 @@ android {
 dependencies {
     implementation(project(":core:domain:common"))
     implementation(project(":core:domain:country"))
-    implementation(project(":core:network"))
-    implementation(project(":core:navigation"))
     implementation(project(":core:data:country"))
+    implementation(project(":core:navigation"))
+
     implementation(libs.coil.compose)
     // KAPT
     kapt(libs.hilt.android.compiler)
@@ -56,11 +56,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.logging.interceptor)
-
 
     implementation(libs.androidx.hilt.navigation.compose)
     testImplementation(libs.junit)

@@ -1,8 +1,8 @@
 package com.realkarim.network
 
 import com.google.gson.Gson
-import com.realkarim.domain.Outcome
 import com.realkarim.network.model.ErrorResponse
+import com.realkarim.network.result.NetworkOutcome
 import retrofit2.Response
 
 class NetworkDataSource<SERVICE>(
@@ -11,7 +11,7 @@ class NetworkDataSource<SERVICE>(
 ) {
     suspend fun <R> performRequest(
         request: suspend SERVICE.() -> Response<R>
-    ): Outcome<R, ErrorResponse> {
+    ): NetworkOutcome<R, ErrorResponse> {
         return try {
             val response = service.request()
             val errorBodyString = response.errorBody()?.string()
@@ -19,9 +19,9 @@ class NetworkDataSource<SERVICE>(
             if (response.isSuccessful) {
                 val body = response.body()
                 return if (body != null && body != Unit) {
-                    Outcome.Success(body)
+                    NetworkOutcome.Success(body)
                 } else {
-                    Outcome.Empty
+                    NetworkOutcome.Empty
                 }
             } else {
                 val error = if (errorBodyString.isNullOrBlank()) {
@@ -29,12 +29,12 @@ class NetworkDataSource<SERVICE>(
                 } else {
                     getErrorResponse(gson, errorBodyString)
                 }
-                Outcome.Error(error)
+                NetworkOutcome.Error(error)
             }
         } catch (e: Exception) {
             e.printStackTrace()
             val fallbackError = getDefaultErrorResponse()
-            Outcome.Error(fallbackError)
+            NetworkOutcome.Error(fallbackError)
         }
     }
 }

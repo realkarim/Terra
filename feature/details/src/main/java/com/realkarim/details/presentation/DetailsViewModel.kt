@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.realkarim.country.model.Country
 import com.realkarim.details.domain.usecase.GetCountryDetailsUseCase
-import com.realkarim.domain.Outcome
+import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,9 +41,9 @@ class DetailsViewModel @Inject constructor(
             val countryName = savedStateHandle.toRoute<DetailsRoute>().countryName
             val result = getCountryDetailsUseCase(countryName)
             when (result) {
-                is Outcome.Success -> _uiState.update { UiState.Success(result.data) }
-                is Outcome.Error -> _uiState.update { UiState.Error("Error Loading Countries") }
-                is Outcome.Empty -> _uiState.update { UiState.Error("Empty Response") }
+                is DomainOutcome.Success -> _uiState.update { UiState.Success(result.data) }
+                is DomainOutcome.Error -> _uiState.update { UiState.Error("Error Loading Countries") }
+                is DomainOutcome.Empty -> _uiState.update { UiState.Error("Empty Response") }
             }
         }
     }

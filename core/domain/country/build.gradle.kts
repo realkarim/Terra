@@ -35,7 +35,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:network"))
     implementation(project(":core:domain:common"))
     implementation(libs.coil.compose)
     // KAPT
