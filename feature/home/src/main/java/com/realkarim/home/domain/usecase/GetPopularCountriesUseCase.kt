@@ -1,7 +1,7 @@
 package com.realkarim.home.domain.usecase
 
+import com.realkarim.country.model.Country
 import com.realkarim.domain.Outcome
-import com.realkarim.domain.model.Country
 import com.realkarim.network.model.ErrorResponse
 
 interface GetPopularCountriesUseCase {

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.realkarim.domain.model.Country
+import com.realkarim.country.model.Country
 
 @Composable
 fun DetailsScreen(

@@ -2,11 +2,12 @@ package com.realkarim.home.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.realkarim.country.model.Country
 import com.realkarim.domain.Outcome
-import com.realkarim.domain.model.Country
 import com.realkarim.home.domain.usecase.GetPopularCountriesUseCase
 import com.realkarim.home.presentation.HomeViewModel.UiState.Error
 import com.realkarim.home.presentation.HomeViewModel.UiState.Success
+import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getPopularCountriesUseCase: GetPopularCountriesUseCase,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(

@@ -35,9 +35,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:domain"))
+    implementation(project(":core:domain:common"))
+    implementation(project(":core:domain:country"))
     implementation(project(":core:network"))
-    implementation(project(":core:data"))
+    implementation(project(":core:data:country"))
+    implementation(project(":core:navigation"))
     implementation(libs.coil.compose)
     // KAPT
     kapt(libs.hilt.android.compiler)

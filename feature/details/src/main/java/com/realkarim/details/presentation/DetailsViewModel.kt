@@ -4,8 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.realkarim.country.model.Country
+import com.realkarim.details.domain.usecase.GetCountryDetailsUseCase
 import com.realkarim.domain.Outcome
-import com.realkarim.domain.model.Country
 import com.realkarim.network.model.ErrorResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
+    private val getCountryDetailsUseCase: GetCountryDetailsUseCase,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 

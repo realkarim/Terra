@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.realkarim.scenery"
+    namespace = "com.realkarim.data"
     compileSdk = 36
 
     defaultConfig {
@@ -36,6 +36,7 @@ android {
 
 dependencies {
     implementation(project(":core:domain:common"))
+    implementation(project(":core:domain:country"))
     implementation(project(":core:network"))
     implementation(libs.coil.compose)
     // KAPT
