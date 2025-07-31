@@ -1,7 +1,7 @@
 package com.realkarim.data.repository
 
-import com.realkarim.country.repository.CountryRepository
 import com.realkarim.country.model.Country
+import com.realkarim.country.repository.CountryRepository
 import com.realkarim.data.mapper.toDomain
 import com.realkarim.data.model.CountryDto
 import com.realkarim.data.remote.CountryRemote
@@ -17,6 +17,6 @@ class CountryRepositoryImpl(
     }
 
     override suspend fun getCountryByName(countryName: String): Outcome<Country, ErrorResponse> {
-        return countryRemote.getCountryByName(countryName).map { it.toDomain() }
+        return countryRemote.getCountryByName(countryName).map { it.first().toDomain() }
     }
 }

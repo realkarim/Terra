@@ -38,6 +38,7 @@ dependencies {
     implementation(project(":core:domain:common"))
     implementation(project(":core:domain:country"))
     implementation(project(":core:network"))
+    implementation(project(":core:navigation"))
     implementation(project(":core:data:country"))
     implementation(libs.coil.compose)
     // KAPT

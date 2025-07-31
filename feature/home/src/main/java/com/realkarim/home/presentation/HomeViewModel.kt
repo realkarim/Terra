@@ -7,6 +7,7 @@ import com.realkarim.domain.Outcome
 import com.realkarim.home.domain.usecase.GetPopularCountriesUseCase
 import com.realkarim.home.presentation.HomeViewModel.UiState.Error
 import com.realkarim.home.presentation.HomeViewModel.UiState.Success
+import com.realkarim.navigation.NavigationEvent
 import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,9 +41,13 @@ class HomeViewModel @Inject constructor(
             when (result) {
                 is Outcome.Success -> _uiState.update { Success(result.data) }
                 is Outcome.Error -> _uiState.update { Error("Error Loading Countries") }
-                Outcome.Empty -> _uiState.update { Error("Empty Response") }
+                is Outcome.Empty -> _uiState.update { Error("Empty Response") }
             }
         }
+    }
+
+    fun goToCountryDetails(country: Country) {
+        navigator.navigate(NavigationEvent.ToDetails(country.name))
     }
 
     sealed class UiState {

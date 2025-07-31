@@ -13,7 +13,7 @@ class CountryRemoteImpl @Inject constructor(
     override suspend fun getAllCountries(): Outcome<List<CountryDto>, ErrorResponse> {
         return homeNetworkDataSource.performRequest { getAllCountries() }
     }
-    override suspend fun getCountryByName(countryName: String): Outcome<CountryDto, ErrorResponse> {
+    override suspend fun getCountryByName(countryName: String): Outcome<List<CountryDto>, ErrorResponse> {
         return homeNetworkDataSource.performRequest { getCountryByName(countryName) }
     }
 }

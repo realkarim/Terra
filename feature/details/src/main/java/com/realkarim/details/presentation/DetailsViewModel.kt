@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import com.realkarim.country.model.Country
 import com.realkarim.details.domain.usecase.GetCountryDetailsUseCase
 import com.realkarim.domain.Outcome
-import com.realkarim.network.model.ErrorResponse
+import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onStart
@@ -20,27 +20,30 @@ import javax.inject.Inject
 class DetailsViewModel @Inject constructor(
     private val getCountryDetailsUseCase: GetCountryDetailsUseCase,
     private val savedStateHandle: SavedStateHandle,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(
         UiState.Loading
     )
     val uiState = _uiState
-        .onStart { }
+        .onStart {
+            showCountryDetails()
+        }
         .stateIn(
             scope = viewModelScope,
             started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000),
             initialValue = UiState.Loading
         )
 
-    fun showCountryDetails() {
+    private fun showCountryDetails() {
         viewModelScope.launch {
-            val countryId = savedStateHandle.toRoute<Int>()
-            val result: Outcome<Country, ErrorResponse>? = null
-            when (result!!) {
+            val countryName = savedStateHandle.toRoute<DetailsRoute>().countryName
+            val result = getCountryDetailsUseCase(countryName)
+            when (result) {
                 is Outcome.Success -> _uiState.update { UiState.Success(result.data) }
                 is Outcome.Error -> _uiState.update { UiState.Error("Error Loading Countries") }
-                Outcome.Empty -> _uiState.update { UiState.Error("Empty Response") }
+                is Outcome.Empty -> _uiState.update { UiState.Error("Empty Response") }
             }
         }
     }

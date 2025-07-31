@@ -17,16 +17,16 @@ fun HandleNavigation(
         navigator.navigationEventFlow.collect { event ->
 
             when (event) {
-                NavigationEvent.Up -> {
+                is NavigationEvent.Up -> {
                     navController.navigateUp()
                 }
 
-                NavigationEvent.ToHome -> {
+                is NavigationEvent.ToHome -> {
                     navController.navigateToHome()
                 }
 
-                NavigationEvent.ToDetails -> {
-                    navController.navigateToDetails()
+                is NavigationEvent.ToDetails -> {
+                    navController.navigateToDetails(event.countryName)
                 }
             }
         }

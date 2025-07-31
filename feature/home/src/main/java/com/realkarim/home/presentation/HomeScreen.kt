@@ -39,7 +39,7 @@ fun HomeScreen(
 
     HomeScreen(
         uiState = uiState,
-        onCountryClick = {},
+        onCountryClick = viewModel::goToCountryDetails,
         modifier = modifier,
     )
 }
