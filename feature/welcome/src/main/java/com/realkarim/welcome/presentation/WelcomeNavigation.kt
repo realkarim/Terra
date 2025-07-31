@@ -9,6 +9,6 @@ data object WelcomeRoute
 
 fun NavGraphBuilder.welcomeScreen() {
     composable<WelcomeRoute> {
-        WelcomeScreen {}
+        WelcomeScreen()
     }
 }

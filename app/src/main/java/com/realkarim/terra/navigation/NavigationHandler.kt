@@ -5,6 +5,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
 import com.realkarim.details.presentation.navigateToDetails
 import com.realkarim.home.presentation.navigateToHome
+import com.realkarim.navigation.NavigationEvent
+import com.realkarim.navigation.Navigator
 
 @Composable
 fun HandleNavigation(

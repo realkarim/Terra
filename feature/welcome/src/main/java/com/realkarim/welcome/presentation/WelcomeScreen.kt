@@ -21,13 +21,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun WelcomeScreen(
-    onGetStartedClick: () -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: WelcomeViewModel = hiltViewModel(),
+) {
+    WelcomeScreen(
+        onGetStartedClick = viewModel::goToHome,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun WelcomeScreen(
+    onGetStartedClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
@@ -59,7 +72,6 @@ fun WelcomeScreen(
                 )
             }
 
-            // Get Started button
             Button(
                 onClick = onGetStartedClick,
                 shape = RoundedCornerShape(50),

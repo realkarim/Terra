@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.realkarim.welcome"
+    namespace = "com.realkarim.navigation"
     compileSdk = 36
 
     defaultConfig {
@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:navigation"))
+    implementation(libs.coil.compose)
     // KAPT
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
