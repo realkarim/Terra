@@ -35,8 +35,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:domain:common"))
-    implementation(project(":core:domain:country"))
+    api(project(":core:domain:common")) // exposing
+    api(project(":core:domain:country"))  // exposing
     implementation(project(":core:network"))
     implementation(libs.coil.compose)
     // KAPT

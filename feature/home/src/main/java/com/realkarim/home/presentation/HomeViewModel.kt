@@ -10,12 +10,10 @@ import com.realkarim.home.presentation.HomeViewModel.UiState.Success
 import com.realkarim.navigation.NavigationEvent
 import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,25 +22,24 @@ class HomeViewModel @Inject constructor(
     private val navigator: Navigator,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState>(
-        UiState.Loading
-    )
+    private val _uiState = showPopularCountries()
     val uiState = _uiState
-        .onStart { showPopularCountries() }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = UiState.Loading
         )
 
-    fun showPopularCountries() {
-        viewModelScope.launch {
+    fun showPopularCountries(): Flow<UiState> {
+        return flow {
             val result = getPopularCountriesUseCase()
-            when (result) {
-                is DomainOutcome.Success -> _uiState.update { Success(result.data) }
-                is DomainOutcome.Error -> _uiState.update { Error("Error Loading Countries") }
-                is DomainOutcome.Empty -> _uiState.update { Error("Empty Response") }
-            }
+            emit(
+                when (result) {
+                    is DomainOutcome.Success -> Success(result.data)
+                    is DomainOutcome.Error -> Error("Error Loading Countries")
+                    is DomainOutcome.Empty -> Error("Empty Response")
+                }
+            )
         }
     }
 
