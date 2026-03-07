@@ -3,6 +3,7 @@ package com.realkarim.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realkarim.country.model.Country
+import com.realkarim.domain.error.DomainError
 import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.country.usecase.GetAllCountriesUseCase
 import com.realkarim.navigation.NavigationEvent
@@ -24,7 +25,7 @@ class HomeViewModel @Inject constructor(
     private sealed class LoadResult {
         object Loading : LoadResult()
         data class Loaded(val countries: List<Country>) : LoadResult()
-        data class Failed(val message: String) : LoadResult()
+        data class Failed(val error: DomainError) : LoadResult()
     }
 
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
@@ -36,7 +37,7 @@ class HomeViewModel @Inject constructor(
     ) { loadResult, query, region ->
         when (loadResult) {
             LoadResult.Loading -> UiState.Loading
-            is LoadResult.Failed -> UiState.Error(loadResult.message)
+            is LoadResult.Failed -> UiState.Error(loadResult.error)
             is LoadResult.Loaded -> {
                 val all = loadResult.countries
                 val regions = all.map { it.region }.distinct().sorted()
@@ -66,8 +67,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _loadResult.value = when (val result = getAllCountriesUseCase()) {
                 is DomainOutcome.Success -> LoadResult.Loaded(result.data)
-                is DomainOutcome.Error -> LoadResult.Failed("Error Loading Countries")
-                is DomainOutcome.Empty -> LoadResult.Failed("Empty Response")
+                is DomainOutcome.Error -> LoadResult.Failed(result.error)
+                is DomainOutcome.Empty -> LoadResult.Failed(DomainError.UnknownError)
             }
         }
     }
@@ -92,6 +93,6 @@ class HomeViewModel @Inject constructor(
             val searchQuery: String,
             val selectedRegion: String?,
         ) : UiState()
-        data class Error(val message: String) : UiState()
+        data class Error(val error: DomainError) : UiState()
     }
 }

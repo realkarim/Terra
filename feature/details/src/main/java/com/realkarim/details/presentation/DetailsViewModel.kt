@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.realkarim.country.model.Country
 import com.realkarim.country.usecase.GetCountryDetailsUseCase
+import com.realkarim.domain.error.DomainError
 import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.navigation.NavigationEvent
 import com.realkarim.navigation.Navigator
@@ -39,8 +40,8 @@ class DetailsViewModel @Inject constructor(
             val alphaCode = savedStateHandle.toRoute<DetailsRoute>().alphaCode
             when (val result = getCountryDetailsUseCase.byAlphaCode(alphaCode)) {
                 is DomainOutcome.Success -> _uiState.update { UiState.Success(result.data) }
-                is DomainOutcome.Error -> _uiState.update { UiState.Error("Error Loading Countries") }
-                is DomainOutcome.Empty -> _uiState.update { UiState.Error("Empty Response") }
+                is DomainOutcome.Error -> _uiState.update { UiState.Error(result.error) }
+                is DomainOutcome.Empty -> _uiState.update { UiState.Error(DomainError.UnknownError) }
             }
         }
     }
@@ -52,6 +53,6 @@ class DetailsViewModel @Inject constructor(
     sealed class UiState {
         object Loading : UiState()
         data class Success(val country: Country) : UiState()
-        data class Error(val message: String) : UiState()
+        data class Error(val error: DomainError) : UiState()
     }
 }
