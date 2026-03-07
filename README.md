@@ -1,57 +1,69 @@
-# Terra 🌍
+# Terra
 
-A modern Android application that showcases countries from around the world with detailed information and UI built with Jetpack Compose.
+A modern Android application that displays countries from around the world with detailed information, built with Jetpack Compose and Clean Architecture.
 
-## 📱 Features
+## Features
 
-- **Countries List**: Browse a list of countries with flags and basic information
-- **Country Details**: View detailed information about each country
+- Browse a list of popular countries with flags and basic info
+- View detailed information for each country
+- Welcome/onboarding screen on first launch
 
-## 🏗️ Architecture
+## Architecture
 
-Terra follows **MVVM (Model-View-ViewModel)** architecture with clean separation of concerns and modular design.
-
-### Architecture Components
+Terra follows **Clean Architecture** with **MVVM**, organized into clear layers:
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Presentation  │    │     Domain      │    │      Data       │
-│   (UI Layer)    │    │   (Business)    │    │   (Repository)  │
-├─────────────────┤    ├─────────────────┤    ├─────────────────┤
-│ • ViewModels    │    │ • Use Cases     │    │ • Repositories  │
-│ • Composables   │    │ • Models        │    │ • Data Sources  │
-│ • Navigation    │    │ • Interfaces    │    │ • Mappers       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+Presentation  -->  Domain  <--  Data
+(UI / VM)         (Models)      (Repo / Remote)
 ```
 
-### Key Architectural Principles
+- **Presentation**: Jetpack Compose screens, ViewModels, Navigation
+- **Domain**: Use cases, repository interfaces, domain models, `DomainOutcome`
+- **Data**: Repository implementations, Retrofit remote sources, DTOs, mappers
 
-- **Single Responsibility**: Each module has a clear, focused purpose
-- **Dependency Inversion**: High-level modules don't depend on low-level modules
-- **Clean Architecture**: Clear separation between presentation, domain, and data layers
-- **Modular Design**: Feature-based modules for better maintainability
+### Result types
 
-## 📦 Project Structure
+| Type | Layer | States |
+|---|---|---|
+| `NetworkOutcome` | Network | `Success`, `Error`, `Empty` |
+| `DomainOutcome` | Domain | `Success`, `Error`, `Empty` |
 
-The project is organized into **feature modules** and **core modules**:
+### Navigation
+
+A singleton `Navigator` exposes a `SharedFlow<NavigationEvent>`. ViewModels emit events; `NavigationHandler` in the app module collects them and drives `NavController`.
+
+## Project Structure
 
 ```
 Terra/
-├── app/                          # Main application module
-├── feature/                      # Feature modules
-│   ├── home/                     # Countries list feature
-│   ├── details/                  # Country details feature
-│   └── welcome/                  # Welcome/onboarding feature
-├── core/                         # Core modules
-│   ├── data/                     # Data layer
-│   │   └── country/              # Country data implementation
-│   ├── domain/                   # Domain layer
-│   │   ├── common/               # Shared domain models
-│   │   └── country/              # Country domain models
-│   ├── network/                  # Network layer
-│   └── navigation/               # Navigation utilities
-└── gradle/                       # Gradle configuration
+├── app/                          # Application entry point, theme, NavHost
+├── feature/
+│   ├── home/                     # Country list screen + ViewModel + use case
+│   ├── details/                  # Country details screen + ViewModel + use case
+│   └── welcome/                  # Welcome/onboarding screen
+└── core/
+    ├── data/country/             # CountryRepositoryImpl, CountryRemote, DTOs, mappers
+    ├── domain/
+    │   ├── common/               # DomainOutcome, DomainError, Mapper interface
+    │   └── country/              # Country domain models, CountryRepository interface
+    ├── network/                  # NetworkDataSource, NetworkOutcome, ServiceFactory, ErrorHandler
+    └── navigation/               # Navigator, NavigationEvent, DI module
 ```
 
-- [REST Countries API](https://restcountries.com/) for country data
+## Tech Stack
 
+| Category | Library |
+|---|---|
+| UI | Jetpack Compose, Material3 |
+| Architecture | ViewModel, Kotlin Coroutines & Flow |
+| DI | Hilt |
+| Networking | Retrofit 3, OkHttp, Gson |
+| Image loading | Coil |
+| Navigation | Jetpack Navigation Compose |
+| Serialization | kotlinx.serialization |
+
+**Min SDK**: 24 | **Compile SDK**: 36 | **Kotlin**: 2.2.20 | **AGP**: 8.13.0
+
+## Data Source
+
+Country data is fetched from the [REST Countries API](https://restcountries.com/).
