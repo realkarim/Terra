@@ -12,14 +12,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -50,6 +61,8 @@ fun HomeScreen(
     HomeScreen(
         uiState = uiState,
         onCountryClick = viewModel::goToCountryDetails,
+        onSearchQueryChange = viewModel::onSearchQueryChange,
+        onRegionSelected = viewModel::onRegionSelected,
         modifier = modifier,
     )
 }
@@ -59,6 +72,8 @@ fun HomeScreen(
 private fun HomeScreen(
     uiState: HomeViewModel.UiState,
     onCountryClick: (Country) -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onRegionSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -68,22 +83,38 @@ private fun HomeScreen(
     ) { innerPadding ->
         when (uiState) {
             is HomeViewModel.UiState.Loading -> LoadingContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
-            is HomeViewModel.UiState.Success -> CountriesGrid(
-                countries = uiState.countries,
-                onCountryClick = onCountryClick,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            )
+            is HomeViewModel.UiState.Success -> Column(
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
+            ) {
+                SearchField(
+                    query = uiState.searchQuery,
+                    onQueryChange = onSearchQueryChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+                if (uiState.regions.isNotEmpty()) {
+                    RegionFilters(
+                        regions = uiState.regions,
+                        selectedRegion = uiState.selectedRegion,
+                        onRegionSelected = onRegionSelected,
+                    )
+                }
+                if (uiState.countries.isEmpty()) {
+                    EmptySearchContent(modifier = Modifier.fillMaxSize())
+                } else {
+                    CountriesGrid(
+                        countries = uiState.countries,
+                        onCountryClick = onCountryClick,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
             is HomeViewModel.UiState.Error -> ErrorContent(
                 message = uiState.message,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
         }
     }
@@ -114,6 +145,62 @@ private fun HomeTopBar() {
 }
 
 @Composable
+private fun SearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = { Text("Search countries...") },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        trailingIcon = {
+            if (query.isNotBlank()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear search",
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(50),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+        ),
+    )
+}
+
+@Composable
+private fun RegionFilters(
+    regions: List<String>,
+    selectedRegion: String?,
+    onRegionSelected: (String?) -> Unit,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(regions) { region ->
+            FilterChip(
+                selected = selectedRegion == region,
+                onClick = { onRegionSelected(region) },
+                label = { Text(region) },
+            )
+        }
+    }
+}
+
+@Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
@@ -133,6 +220,26 @@ private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
             )
             Text(
                 text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptySearchContent(modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "No countries found",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = "Try a different name or region",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -223,12 +330,12 @@ fun CountryCard(
 fun HomeScreenPreview() {
     HomeScreen(
         uiState = HomeViewModel.UiState.Success(
-            listOf(
+            countries = listOf(
                 Country(
                     name = "United States",
                     callingCodes = listOf("1"),
                     capital = "Washington, D.C.",
-                    subregion = "Americas",
+                    subregion = "Northern America",
                     region = "Americas",
                     population = 331002651,
                     area = 9833517.0,
@@ -244,7 +351,7 @@ fun HomeScreenPreview() {
                     name = "Canada",
                     callingCodes = listOf("1"),
                     capital = "Ottawa",
-                    subregion = "Americas",
+                    subregion = "Northern America",
                     region = "Americas",
                     population = 37742154,
                     area = 9984670.0,
@@ -257,26 +364,10 @@ fun HomeScreenPreview() {
                     regionalBlocs = emptyList()
                 ),
                 Country(
-                    name = "Mexico",
-                    callingCodes = listOf("52"),
-                    capital = "Mexico City",
-                    subregion = "Americas",
-                    region = "Americas",
-                    population = 128932753,
-                    area = 1964375.0,
-                    timezones = listOf("UTC-06:00"),
-                    borders = listOf("USA", "GTM", "BLZ"),
-                    nativeName = "México",
-                    flagUrl = "https://flagcdn.com/mx.png",
-                    currencies = emptyList(),
-                    languages = emptyList(),
-                    regionalBlocs = emptyList()
-                ),
-                Country(
                     name = "United Kingdom",
                     callingCodes = listOf("44"),
                     capital = "London",
-                    subregion = "Europe",
+                    subregion = "Northern Europe",
                     region = "Europe",
                     population = 67886011,
                     area = 243610.0,
@@ -288,8 +379,13 @@ fun HomeScreenPreview() {
                     languages = emptyList(),
                     regionalBlocs = emptyList()
                 )
-            )
+            ),
+            regions = listOf("Americas", "Europe"),
+            searchQuery = "",
+            selectedRegion = null,
         ),
-        onCountryClick = {}
+        onCountryClick = {},
+        onSearchQueryChange = {},
+        onRegionSelected = {},
     )
 }
