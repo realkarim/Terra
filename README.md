@@ -1,54 +1,15 @@
 # Terra
 
-A modern Android application that displays countries from around the world with detailed information, built with Jetpack Compose and Clean Architecture.
+A modern Android app that lets you explore every country in the world — browse flags, read geographic and demographic details, and jump between neighbouring countries.
 
 ## Features
 
-- Browse a list of all countries with flags and basic info
-- View detailed information for each country
-- Welcome/onboarding screen on first launch
-
-## Architecture
-
-Terra follows **Clean Architecture** with **MVVM**, organized into clear layers:
-
-```
-Presentation  -->  Domain  <--  Data
-(UI / VM)         (Models)      (Repo / Remote)
-```
-
-- **Presentation**: Jetpack Compose screens, ViewModels, Navigation
-- **Domain**: Use cases, repository interfaces, domain models, `DomainOutcome`
-- **Data**: Repository implementations, Retrofit remote sources, DTOs, mappers
-
-### Result types
-
-| Type | Layer | States |
-|---|---|---|
-| `NetworkOutcome` | Network | `Success`, `Error`, `Empty` |
-| `DomainOutcome` | Domain | `Success`, `Error`, `Empty` |
-
-### Navigation
-
-A singleton `Navigator` exposes a `SharedFlow<NavigationEvent>`. ViewModels emit events; `NavigationHandler` in the app module collects them and drives `NavController`.
-
-## Project Structure
-
-```
-Terra/
-├── app/                          # Application entry point, theme, NavHost
-├── feature/
-│   ├── home/                     # Country list screen + ViewModel + use case
-│   ├── details/                  # Country details screen + ViewModel + use case
-│   └── welcome/                  # Welcome/onboarding screen
-└── core/
-    ├── data/country/             # CountryRepositoryImpl, CountryRemote, DTOs, mappers
-    ├── domain/
-    │   ├── common/               # DomainOutcome, DomainError, Mapper interface
-    │   └── country/              # Country domain models, CountryRepository interface
-    ├── network/                  # NetworkDataSource, NetworkOutcome, ServiceFactory, ErrorHandler
-    └── navigation/               # Navigator, NavigationEvent, DI module
-```
+- **Country browser** — scrollable grid of all countries with flag images, name, and capital
+- **Search** — filter countries by name in real time
+- **Region filter** — narrow the list by continent via chip filters
+- **Country details** — flag hero image, location info (capital, region, subregion), demographics (population, area, native name, calling codes), timezones, currencies, languages, and regional blocs
+- **Border navigation** — tap any border chip to jump directly to that neighbouring country
+- **Welcome screen** — shown on first launch
 
 ## Tech Stack
 
@@ -64,6 +25,24 @@ Terra/
 
 **Min SDK**: 24 | **Compile SDK**: 36 | **Kotlin**: 2.2.20 | **AGP**: 8.13.0
 
-## Data Source
+## Project Structure
 
-Country data is fetched from the [REST Countries API](https://restcountries.com/).
+```
+Terra/
+├── app/                        # Entry point, theme, NavHost, NavigationHandler
+├── feature/
+│   ├── home/                   # Country grid, search, region filter
+│   ├── details/                # Country detail screen, border navigation
+│   └── welcome/                # Onboarding screen
+└── core/
+    ├── data/country/           # Repository impl, remote source, DTOs, mappers
+    ├── domain/
+    │   ├── common/             # DomainOutcome, DomainError
+    │   └── country/            # Country models, repository interface, use cases
+    ├── network/                # NetworkDataSource, NetworkOutcome, ServiceFactory
+    └── navigation/             # Navigator, NavigationEvent
+```
+
+## Documentation
+
+- [`docs/Architecture.md`](./docs/Architecture.md) — layers, module graph, result types, mappers, navigation flow, DI setup
