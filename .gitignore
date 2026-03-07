@@ -32,6 +32,7 @@ compose_cache/
 
 # === Kotlin ===
 *.kotlin_module
+.kotlin
 
 # === Log & Dump Files ===
 *.log
@@ -57,3 +58,5 @@ compose_cache/
 
 /detekt
 /docs
+
+CLAUDE.md

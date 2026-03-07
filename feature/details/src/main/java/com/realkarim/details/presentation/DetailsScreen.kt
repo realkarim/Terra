@@ -1,8 +1,15 @@
 package com.realkarim.details.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -10,13 +17,19 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,14 +62,36 @@ private fun DetailsScreen(
         contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPaddings ->
         when (uiState) {
-            is DetailsViewModel.UiState.Loading -> {}
+            is DetailsViewModel.UiState.Loading -> LoadingContent(
+                modifier = Modifier.padding(innerPaddings).fillMaxSize()
+            )
             is DetailsViewModel.UiState.Success -> Details(
                 country = uiState.country,
                 modifier = Modifier.padding(innerPaddings)
             )
-
-            is DetailsViewModel.UiState.Error -> {}
+            is DetailsViewModel.UiState.Error -> ErrorContent(
+                message = uiState.message,
+                modifier = Modifier.padding(innerPaddings).fillMaxSize()
+            )
         }
+    }
+}
+
+@Composable
+private fun LoadingContent(modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error
+        )
     }
 }
 
@@ -65,80 +100,194 @@ private fun Details(
     country: Country,
     modifier: Modifier = Modifier
 ) {
-    val scrollState = rememberScrollState()
-
     Column(
         modifier = modifier
-            .verticalScroll(scrollState)
-            .padding(16.dp)
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
+        FlagHero(country = country)
+
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            InfoCard(title = "Location") {
+                InfoRow(label = "Capital", value = country.capital)
+                InfoRow(label = "Region", value = country.region)
+                InfoRow(label = "Subregion", value = country.subregion)
+            }
+
+            InfoCard(title = "Demographics") {
+                InfoRow(label = "Population", value = "%,d".format(country.population))
+                country.area?.let { InfoRow(label = "Area", value = "%.0f km²".format(it)) }
+                InfoRow(label = "Native Name", value = country.nativeName)
+                InfoRow(
+                    label = "Calling Codes",
+                    value = country.callingCodes.joinToString(", ") { "+$it" }
+                )
+            }
+
+            if (country.timezones.isNotEmpty()) {
+                ChipSection(title = "Timezones", items = country.timezones)
+            }
+
+            if (country.borders.isNotEmpty()) {
+                ChipSection(title = "Borders", items = country.borders)
+            }
+
+            if (country.currencies.isNotEmpty()) {
+                InfoCard(title = "Currencies") {
+                    country.currencies.forEach { currency ->
+                        InfoRow(label = currency.name, value = "${currency.symbol} (${currency.code})")
+                    }
+                }
+            }
+
+            if (country.languages.isNotEmpty()) {
+                InfoCard(title = "Languages") {
+                    country.languages.forEach { language ->
+                        InfoRow(label = language.name, value = language.nativeName)
+                    }
+                }
+            }
+
+            if (country.regionalBlocs.isNotEmpty()) {
+                InfoCard(title = "Regional Blocs") {
+                    country.regionalBlocs.forEach { bloc ->
+                        InfoRow(label = bloc.acronym, value = bloc.name)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun FlagHero(country: Country, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(260.dp)
     ) {
         AsyncImage(
             model = country.flagUrl,
             contentDescription = "${country.name} flag",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(12.dp)),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                    )
+                )
+                .padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            Column {
+                Text(
+                    text = country.name,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                if (country.nativeName.isNotBlank() && country.nativeName != country.name) {
+                    Text(
+                        text = country.nativeName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White.copy(alpha = 0.85f)
+                    )
+                }
+            }
+        }
+    }
+}
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = country.name,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+@Composable
+private fun InfoCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            content()
+        }
+    }
+}
 
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(
-            text = "Capital: ${country.capital}",
-            style = MaterialTheme.typography.bodyLarge
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.4f)
         )
-
-        Text("Region: ${country.region} - ${country.subregion}")
-        Text("Native Name: ${country.nativeName}")
-        Text("Calling Codes: ${country.callingCodes.joinToString(", ")}")
-        Text("Population: ${country.population}")
-        country.area?.let {
-            Text("Area: $it km²")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         Text(
-            "Timezones:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(0.6f)
         )
-        country.timezones.forEach {
-            Text("• $it", style = MaterialTheme.typography.bodyMedium)
-        }
+    }
+}
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("Borders:", style = MaterialTheme.typography.titleMedium)
-        Text(country.borders.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
-
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("Currencies:", style = MaterialTheme.typography.titleMedium)
-        country.currencies.forEach {
-            Text("- ${it.name} (${it.symbol})")
-        }
-
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Languages:", style = MaterialTheme.typography.titleMedium)
-        country.languages.forEach {
-            Text("- ${it.name} (${it.nativeName})")
-        }
-
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Regional Blocs:", style = MaterialTheme.typography.titleMedium)
-        country.regionalBlocs.forEach {
-            Text("- ${it.acronym}: ${it.name}")
+@Composable
+private fun ChipSection(
+    title: String,
+    items: List<String>,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items.forEach { item ->
+                    SuggestionChip(
+                        onClick = {},
+                        label = { Text(item, style = MaterialTheme.typography.labelMedium) }
+                    )
+                }
+            }
         }
     }
 }
