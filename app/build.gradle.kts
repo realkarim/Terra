@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":feature:welcome"))
     implementation(project(":feature:home"))
     implementation(project(":feature:details"))
+    implementation(project(":core:data:country"))
     implementation(project(":core:navigation"))
 
     implementation(libs.androidx.appcompat)

@@ -1,4 +1,4 @@
-package com.realkarim.details.domain.usecase
+package com.realkarim.country.usecase
 
 import com.realkarim.country.model.Country
 import com.realkarim.country.repository.CountryRepository

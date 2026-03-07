@@ -1,4 +1,4 @@
-package com.realkarim.domain.mapper
+package com.realkarim.data.mapper
 
 import com.realkarim.domain.error.DomainError
 import com.realkarim.network.model.ErrorResponse

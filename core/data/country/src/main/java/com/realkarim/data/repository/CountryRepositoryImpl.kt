@@ -5,7 +5,7 @@ import com.realkarim.country.repository.CountryRepository
 import com.realkarim.data.mapper.toDomain
 import com.realkarim.data.remote.CountryRemote
 import com.realkarim.domain.error.DomainError
-import com.realkarim.domain.mapper.toDomainError
+import com.realkarim.data.mapper.toDomainError
 import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.domain.result.DomainOutcome.Error
 import com.realkarim.domain.result.DomainOutcome.Success

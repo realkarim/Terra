@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realkarim.country.model.Country
 import com.realkarim.domain.result.DomainOutcome
-import com.realkarim.home.domain.usecase.GetPopularCountriesUseCase
+import com.realkarim.country.usecase.GetAllCountriesUseCase
 import com.realkarim.navigation.NavigationEvent
 import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getPopularCountriesUseCase: GetPopularCountriesUseCase,
+    private val getAllCountriesUseCase: GetAllCountriesUseCase,
     private val navigator: Navigator,
 ) : ViewModel() {
 
@@ -64,7 +64,7 @@ class HomeViewModel @Inject constructor(
 
     private fun loadCountries() {
         viewModelScope.launch {
-            _loadResult.value = when (val result = getPopularCountriesUseCase()) {
+            _loadResult.value = when (val result = getAllCountriesUseCase()) {
                 is DomainOutcome.Success -> LoadResult.Loaded(result.data)
                 is DomainOutcome.Error -> LoadResult.Failed("Error Loading Countries")
                 is DomainOutcome.Empty -> LoadResult.Failed("Empty Response")

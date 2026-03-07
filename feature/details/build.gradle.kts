@@ -35,9 +35,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:domain:common")) // hiding
-    implementation(project(":core:domain:country")) // hiding
-    implementation(project(":core:data:country"))
+    implementation(project(":core:domain:common"))
+    implementation(project(":core:domain:country"))
     implementation(project(":core:navigation"))
 
     implementation(libs.coil.compose)

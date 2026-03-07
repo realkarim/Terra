@@ -4,7 +4,7 @@ A modern Android application that displays countries from around the world with 
 
 ## Features
 
-- Browse a list of popular countries with flags and basic info
+- Browse a list of all countries with flags and basic info
 - View detailed information for each country
 - Welcome/onboarding screen on first launch
 

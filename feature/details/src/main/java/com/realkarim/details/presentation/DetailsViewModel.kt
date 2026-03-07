@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.realkarim.country.model.Country
-import com.realkarim.details.domain.usecase.GetCountryDetailsUseCase
+import com.realkarim.country.usecase.GetCountryDetailsUseCase
 import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.navigation.NavigationEvent
 import com.realkarim.navigation.Navigator
