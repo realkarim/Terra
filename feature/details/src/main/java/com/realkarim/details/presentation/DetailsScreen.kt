@@ -304,6 +304,7 @@ private fun DetailsScreenPreview() {
         uiState = DetailsViewModel.UiState.Success(
             Country(
                 name = "Testland",
+                alphaCode = "TST",
                 capital = "Test City",
                 region = "Test Region",
                 subregion = "Test Subregion",

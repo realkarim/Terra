@@ -333,6 +333,7 @@ fun HomeScreenPreview() {
             countries = listOf(
                 Country(
                     name = "United States",
+                    alphaCode = "USA",
                     callingCodes = listOf("1"),
                     capital = "Washington, D.C.",
                     subregion = "Northern America",
@@ -349,6 +350,7 @@ fun HomeScreenPreview() {
                 ),
                 Country(
                     name = "Canada",
+                    alphaCode = "CAN",
                     callingCodes = listOf("1"),
                     capital = "Ottawa",
                     subregion = "Northern America",
@@ -365,6 +367,7 @@ fun HomeScreenPreview() {
                 ),
                 Country(
                     name = "United Kingdom",
+                    alphaCode = "GBR",
                     callingCodes = listOf("44"),
                     capital = "London",
                     subregion = "Northern Europe",

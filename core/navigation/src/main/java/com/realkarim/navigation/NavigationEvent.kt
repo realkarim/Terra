@@ -6,5 +6,5 @@ sealed interface NavigationEvent {
 
     data object ToHome : NavigationEvent
 
-    data class ToDetails(val countryName: String) : NavigationEvent
+    data class ToDetails(val alphaCode: String) : NavigationEvent
 }

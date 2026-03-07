@@ -6,10 +6,10 @@ import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DetailsRoute(val countryName: String)
+data class DetailsRoute(val alphaCode: String)
 
-fun NavController.navigateToDetails(countryName: String) =
-    navigate(route = DetailsRoute(countryName = countryName))
+fun NavController.navigateToDetails(alphaCode: String) =
+    navigate(route = DetailsRoute(alphaCode = alphaCode))
 
 fun NavGraphBuilder.detailsScreen() {
     composable<DetailsRoute> {

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class CountryDto(
     @SerializedName("name") val name: String?,
+    @SerializedName("alpha3Code") val alpha3Code: String?,
     @SerializedName("callingCodes") val callingCodes: List<String>?,
     @SerializedName("capital") val capital: String?,
     @SerializedName("subregion") val subregion: String?,

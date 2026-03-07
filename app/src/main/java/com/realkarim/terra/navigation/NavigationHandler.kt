@@ -26,7 +26,7 @@ fun HandleNavigation(
                 }
 
                 is NavigationEvent.ToDetails -> {
-                    navController.navigateToDetails(event.countryName)
+                    navController.navigateToDetails(event.alphaCode)
                 }
             }
         }

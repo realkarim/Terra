@@ -11,6 +11,7 @@ import com.realkarim.data.model.RegionalBlocDto
 
 fun CountryDto.toDomain(): Country = Country(
     name = name.orEmpty(),
+    alphaCode = alpha3Code.orEmpty(),
     callingCodes = callingCodes.orEmpty(),
     capital = capital.orEmpty(),
     subregion = subregion.orEmpty(),

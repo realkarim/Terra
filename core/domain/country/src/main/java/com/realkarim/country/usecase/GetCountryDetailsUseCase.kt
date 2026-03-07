@@ -5,5 +5,5 @@ import com.realkarim.domain.error.DomainError
 import com.realkarim.domain.result.DomainOutcome
 
 interface GetCountryDetailsUseCase {
-    suspend operator fun invoke(countryName: String): DomainOutcome<Country, DomainError>
+    suspend fun byAlphaCode(code: String): DomainOutcome<Country, DomainError>
 }

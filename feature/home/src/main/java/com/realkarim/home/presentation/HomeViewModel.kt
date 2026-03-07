@@ -81,7 +81,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun goToCountryDetails(country: Country) {
-        navigator.navigate(NavigationEvent.ToDetails(country.name))
+        navigator.navigate(NavigationEvent.ToDetails(country.alphaCode))
     }
 
     sealed class UiState {

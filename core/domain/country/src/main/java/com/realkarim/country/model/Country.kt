@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Country(
     val name: String,
+    val alphaCode: String,
     val callingCodes: List<String>,
     val capital: String,
     val subregion: String,

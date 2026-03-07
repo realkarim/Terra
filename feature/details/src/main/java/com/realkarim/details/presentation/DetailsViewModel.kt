@@ -36,8 +36,8 @@ class DetailsViewModel @Inject constructor(
 
     private fun showCountryDetails() {
         viewModelScope.launch {
-            val countryName = savedStateHandle.toRoute<DetailsRoute>().countryName
-            when (val result = getCountryDetailsUseCase(countryName)) {
+            val alphaCode = savedStateHandle.toRoute<DetailsRoute>().alphaCode
+            when (val result = getCountryDetailsUseCase.byAlphaCode(alphaCode)) {
                 is DomainOutcome.Success -> _uiState.update { UiState.Success(result.data) }
                 is DomainOutcome.Error -> _uiState.update { UiState.Error("Error Loading Countries") }
                 is DomainOutcome.Empty -> _uiState.update { UiState.Error("Empty Response") }
