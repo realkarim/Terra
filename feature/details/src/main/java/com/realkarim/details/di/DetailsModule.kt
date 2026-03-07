@@ -1,8 +1,6 @@
 package com.realkarim.details.di
 
 import com.realkarim.country.repository.CountryRepository
-import com.realkarim.details.domain.usecase.GetBorderCountriesUseCase
-import com.realkarim.details.domain.usecase.GetBorderCountriesUseCaseImpl
 import com.realkarim.details.domain.usecase.GetCountryDetailsUseCase
 import com.realkarim.details.domain.usecase.GetCountryDetailsUseCaseImpl
 import dagger.Module
@@ -18,12 +16,5 @@ class DetailsModule {
         countryRepository: CountryRepository
     ): GetCountryDetailsUseCase {
         return GetCountryDetailsUseCaseImpl(countryRepository)
-    }
-
-    @Provides
-    fun provideGetBorderCountriesUseCase(
-        countryRepository: CountryRepository
-    ): GetBorderCountriesUseCase {
-        return GetBorderCountriesUseCaseImpl(countryRepository)
     }
 }

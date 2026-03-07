@@ -69,7 +69,6 @@ private fun DetailsScreen(
             )
             is DetailsViewModel.UiState.Success -> Details(
                 country = uiState.country,
-                borderNames = uiState.borderNames,
                 onBorderClick = onBorderClick,
                 modifier = Modifier.padding(innerPaddings)
             )
@@ -102,7 +101,6 @@ private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
 @Composable
 private fun Details(
     country: Country,
-    borderNames: Map<String, String>,
     onBorderClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -138,11 +136,7 @@ private fun Details(
             }
 
             if (country.borders.isNotEmpty()) {
-                BordersSection(
-                    borders = country.borders,
-                    borderNames = borderNames,
-                    onBorderClick = onBorderClick,
-                )
+                ChipSection(title = "Borders", items = country.borders, onItemClick = onBorderClick)
             }
 
             if (country.currencies.isNotEmpty()) {
@@ -270,7 +264,8 @@ private fun InfoRow(label: String, value: String) {
 private fun ChipSection(
     title: String,
     items: List<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick: ((String) -> Unit)? = null,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -293,46 +288,8 @@ private fun ChipSection(
             ) {
                 items.forEach { item ->
                     SuggestionChip(
-                        onClick = {},
+                        onClick = { onItemClick?.invoke(item) },
                         label = { Text(item, style = MaterialTheme.typography.labelMedium) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BordersSection(
-    borders: List<String>,
-    borderNames: Map<String, String>,
-    onBorderClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Borders",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                borders.forEach { code ->
-                    val displayName = borderNames[code] ?: code
-                    SuggestionChip(
-                        onClick = { onBorderClick(displayName) },
-                        label = { Text(displayName, style = MaterialTheme.typography.labelMedium) }
                     )
                 }
             }
@@ -345,7 +302,7 @@ private fun BordersSection(
 private fun DetailsScreenPreview() {
     DetailsScreen(
         uiState = DetailsViewModel.UiState.Success(
-            country = Country(
+            Country(
                 name = "Testland",
                 capital = "Test City",
                 region = "Test Region",
@@ -360,8 +317,7 @@ private fun DetailsScreenPreview() {
                 currencies = listOf(),
                 languages = listOf(),
                 regionalBlocs = listOf()
-            ),
-            borderNames = mapOf("AAA" to "Country A", "BBB" to "Country B"),
+            )
         ),
         onBorderClick = {},
     )

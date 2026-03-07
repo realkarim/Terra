@@ -11,6 +11,10 @@ class GetCountryDetailsUseCaseImpl @Inject constructor(
 ) : GetCountryDetailsUseCase {
 
     override suspend fun invoke(countryName: String): DomainOutcome<Country, DomainError> {
-        return countryRepository.getCountryByName(countryName)
+        return if (countryName.length == 3 && countryName.all { it.isLetter() }) {
+            countryRepository.getCountryByAlphaCode(countryName)
+        } else {
+            countryRepository.getCountryByName(countryName)
+        }
     }
 }
