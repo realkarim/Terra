@@ -48,6 +48,7 @@ fun DetailsScreen(
 
     DetailsScreen(
         uiState = uiState,
+        onBorderClick = viewModel::goToBorderCountry,
         modifier = modifier
     )
 }
@@ -55,6 +56,7 @@ fun DetailsScreen(
 @Composable
 private fun DetailsScreen(
     uiState: DetailsViewModel.UiState,
+    onBorderClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -67,6 +69,8 @@ private fun DetailsScreen(
             )
             is DetailsViewModel.UiState.Success -> Details(
                 country = uiState.country,
+                borderNames = uiState.borderNames,
+                onBorderClick = onBorderClick,
                 modifier = Modifier.padding(innerPaddings)
             )
             is DetailsViewModel.UiState.Error -> ErrorContent(
@@ -98,6 +102,8 @@ private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
 @Composable
 private fun Details(
     country: Country,
+    borderNames: Map<String, String>,
+    onBorderClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -132,7 +138,11 @@ private fun Details(
             }
 
             if (country.borders.isNotEmpty()) {
-                ChipSection(title = "Borders", items = country.borders)
+                BordersSection(
+                    borders = country.borders,
+                    borderNames = borderNames,
+                    onBorderClick = onBorderClick,
+                )
             }
 
             if (country.currencies.isNotEmpty()) {
@@ -292,12 +302,50 @@ private fun ChipSection(
     }
 }
 
+@Composable
+private fun BordersSection(
+    borders: List<String>,
+    borderNames: Map<String, String>,
+    onBorderClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Borders",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                borders.forEach { code ->
+                    val displayName = borderNames[code] ?: code
+                    SuggestionChip(
+                        onClick = { onBorderClick(displayName) },
+                        label = { Text(displayName, style = MaterialTheme.typography.labelMedium) }
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun DetailsScreenPreview() {
     DetailsScreen(
         uiState = DetailsViewModel.UiState.Success(
-            Country(
+            country = Country(
                 name = "Testland",
                 capital = "Test City",
                 region = "Test Region",
@@ -308,11 +356,13 @@ private fun DetailsScreenPreview() {
                 area = 12345.67,
                 flagUrl = "https://example.com/flag.png",
                 timezones = listOf("UTC+0"),
-                borders = listOf("Country A", "Country B"),
+                borders = listOf("AAA", "BBB"),
                 currencies = listOf(),
                 languages = listOf(),
                 regionalBlocs = listOf()
-            )
-        )
+            ),
+            borderNames = mapOf("AAA" to "Country A", "BBB" to "Country B"),
+        ),
+        onBorderClick = {},
     )
 }

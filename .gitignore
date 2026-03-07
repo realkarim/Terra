@@ -59,4 +59,5 @@ compose_cache/
 /detekt
 /docs
 
+.claude
 CLAUDE.md

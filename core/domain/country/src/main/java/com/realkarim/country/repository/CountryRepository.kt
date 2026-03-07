@@ -7,4 +7,5 @@ import com.realkarim.domain.result.DomainOutcome
 interface CountryRepository {
     suspend fun getAllCountries(): DomainOutcome<List<Country>, DomainError>
     suspend fun getCountryByName(countryName: String): DomainOutcome<Country, DomainError>
+    suspend fun getCountryByAlphaCode(code: String): DomainOutcome<Country, DomainError>
 }

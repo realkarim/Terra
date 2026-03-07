@@ -13,4 +13,9 @@ interface CountryService {
     suspend fun getCountryByName(
         @Path("countryName") countryName: String
     ): Response<List<CountryDto>>
+
+    @GET("/alpha/{code}")
+    suspend fun getCountryByAlphaCode(
+        @Path("code") code: String
+    ): Response<CountryDto>
 }

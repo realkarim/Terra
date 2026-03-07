@@ -32,4 +32,13 @@ class CountryRepositoryImpl(
             is NetworkOutcome.Empty -> DomainOutcome.Empty
         }
     }
+
+    override suspend fun getCountryByAlphaCode(code: String): DomainOutcome<Country, DomainError> {
+        val outcome = countryRemote.getCountryByAlphaCode(code)
+        return when (outcome) {
+            is NetworkOutcome.Success -> Success(outcome.data.toDomain())
+            is NetworkOutcome.Error -> Error(outcome.error.toDomainError())
+            is NetworkOutcome.Empty -> DomainOutcome.Empty
+        }
+    }
 }
