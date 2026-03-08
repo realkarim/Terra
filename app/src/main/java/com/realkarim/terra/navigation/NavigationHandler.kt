@@ -2,31 +2,29 @@ package com.realkarim.terra.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.NavController
-import com.realkarim.details.presentation.navigateToDetails
-import com.realkarim.home.presentation.navigateToHome
+import androidx.navigation3.runtime.NavBackStack
+import com.realkarim.details.presentation.DetailsRoute
+import com.realkarim.home.presentation.HomeRoute
 import com.realkarim.navigation.NavigationEvent
 import com.realkarim.navigation.Navigator
 
 @Composable
 fun HandleNavigation(
     navigator: Navigator,
-    navController: NavController,
+    backStack: NavBackStack,
 ) {
     LaunchedEffect(navigator) {
         navigator.navigationEventFlow.collect { event ->
-
             when (event) {
-                is NavigationEvent.Up -> {
-                    navController.navigateUp()
-                }
+                is NavigationEvent.Up -> backStack.removeLastOrNull()
 
                 is NavigationEvent.ToHome -> {
-                    navController.navigateToHome()
+                    backStack.clear()
+                    backStack.add(HomeRoute)
                 }
 
                 is NavigationEvent.ToDetails -> {
-                    navController.navigateToDetails(event.alphaCode)
+                    backStack.add(DetailsRoute(alphaCode = event.alphaCode))
                 }
             }
         }

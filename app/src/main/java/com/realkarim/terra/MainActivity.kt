@@ -3,11 +3,12 @@ package com.realkarim.terra
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.realkarim.navigation.Navigator
 import com.realkarim.terra.navigation.HandleNavigation
 import com.realkarim.terra.navigation.TerraNavHost
 import com.realkarim.terra.theme.TerraTheme
+import com.realkarim.welcome.presentation.WelcomeRoute
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -20,13 +21,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navController = rememberNavController()
+            val backStack = rememberNavBackStack(WelcomeRoute)
             TerraTheme {
                 HandleNavigation(
                     navigator = navigator,
-                    navController = navController,
+                    backStack = backStack,
                 )
-                TerraNavHost(navController = navController)
+                TerraNavHost(backStack = backStack)
             }
         }
     }

@@ -42,8 +42,12 @@ import com.realkarim.domain.error.DomainError
 
 @Composable
 fun DetailsScreen(
+    alphaCode: String,
     modifier: Modifier = Modifier,
-    viewModel: DetailsViewModel = hiltViewModel()
+    viewModel: DetailsViewModel = hiltViewModel<DetailsViewModel, DetailsViewModel.Factory>(
+        key = alphaCode,
+        creationCallback = { factory -> factory.create(alphaCode) }
+    ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

@@ -1,14 +1,7 @@
 package com.realkarim.welcome.presentation
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object WelcomeRoute
-
-fun NavGraphBuilder.welcomeScreen() {
-    composable<WelcomeRoute> {
-        WelcomeScreen()
-    }
-}
+data object WelcomeRoute : NavKey
