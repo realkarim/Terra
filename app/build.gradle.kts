@@ -46,7 +46,6 @@ dependencies {
     implementation(project(":feature:home"))
     implementation(project(":feature:details"))
     implementation(project(":core:data:country"))
-    implementation(project(":core:navigation"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -64,8 +63,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit)

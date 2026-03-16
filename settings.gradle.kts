@@ -24,7 +24,6 @@ include(":app")
 
 // core
 include(":core:network")
-include(":core:navigation")
 include(":core:data:country")
 include(":core:domain:common")
 include(":core:domain:country")

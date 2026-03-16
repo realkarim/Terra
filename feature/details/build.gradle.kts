@@ -37,7 +37,6 @@ android {
 dependencies {
     implementation(project(":core:domain:common"))
     implementation(project(":core:domain:country"))
-    implementation(project(":core:navigation"))
 
     implementation(libs.coil.compose)
     // KAPT
@@ -53,9 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
-
+    implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.hilt.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

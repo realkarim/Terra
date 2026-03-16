@@ -54,6 +54,7 @@ import com.realkarim.domain.error.DomainError
 
 @Composable
 fun HomeScreen(
+    navigation: HomeNavigation,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -61,7 +62,7 @@ fun HomeScreen(
 
     HomeScreen(
         uiState = uiState,
-        onCountryClick = viewModel::goToCountryDetails,
+        onCountryClick = { country -> navigation.onCountryClick(country.alphaCode) },
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onRegionSelected = viewModel::onRegionSelected,
         modifier = modifier,

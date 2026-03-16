@@ -42,14 +42,19 @@ import com.realkarim.domain.error.DomainError
 
 @Composable
 fun DetailsScreen(
+    alphaCode: String,
+    navigation: DetailsNavigation,
     modifier: Modifier = Modifier,
-    viewModel: DetailsViewModel = hiltViewModel()
+    viewModel: DetailsViewModel = hiltViewModel<DetailsViewModel, DetailsViewModel.Factory>(
+        key = alphaCode,
+        creationCallback = { factory -> factory.create(alphaCode) }
+    ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DetailsScreen(
         uiState = uiState,
-        onBorderClick = viewModel::goToBorderCountry,
+        onBorderClick = navigation::onBorderCountryClick,
         modifier = modifier
     )
 }

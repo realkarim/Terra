@@ -1,15 +1,14 @@
 package com.realkarim.details.presentation
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.realkarim.country.model.Country
 import com.realkarim.country.usecase.GetCountryDetailsUseCase
 import com.realkarim.domain.error.DomainError
 import com.realkarim.domain.result.DomainOutcome
-import com.realkarim.navigation.NavigationEvent
-import com.realkarim.navigation.Navigator
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,14 +16,17 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class DetailsViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
+class DetailsViewModel @AssistedInject constructor(
     private val getCountryDetailsUseCase: GetCountryDetailsUseCase,
-    private val savedStateHandle: SavedStateHandle,
-    private val navigator: Navigator,
+    @Assisted private val alphaCode: String,
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(alphaCode: String): DetailsViewModel
+    }
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState = _uiState
@@ -37,17 +39,12 @@ class DetailsViewModel @Inject constructor(
 
     private fun showCountryDetails() {
         viewModelScope.launch {
-            val alphaCode = savedStateHandle.toRoute<DetailsRoute>().alphaCode
             when (val result = getCountryDetailsUseCase.byAlphaCode(alphaCode)) {
                 is DomainOutcome.Success -> _uiState.update { UiState.Success(result.data) }
                 is DomainOutcome.Error -> _uiState.update { UiState.Error(result.error) }
                 is DomainOutcome.Empty -> _uiState.update { UiState.Error(DomainError.UnknownError) }
             }
         }
-    }
-
-    fun goToBorderCountry(alphaCode: String) {
-        navigator.navigate(NavigationEvent.ToDetails(alphaCode))
     }
 
     sealed class UiState {
