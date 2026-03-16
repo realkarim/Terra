@@ -35,7 +35,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:navigation"))
     // KAPT
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)

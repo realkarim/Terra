@@ -6,8 +6,6 @@ import com.realkarim.country.model.Country
 import com.realkarim.domain.error.DomainError
 import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.country.usecase.GetAllCountriesUseCase
-import com.realkarim.navigation.NavigationEvent
-import com.realkarim.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,7 +17,6 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getAllCountriesUseCase: GetAllCountriesUseCase,
-    private val navigator: Navigator,
 ) : ViewModel() {
 
     private sealed class LoadResult {
@@ -79,10 +76,6 @@ class HomeViewModel @Inject constructor(
 
     fun onRegionSelected(region: String?) {
         _selectedRegion.value = if (_selectedRegion.value == region) null else region
-    }
-
-    fun goToCountryDetails(country: Country) {
-        navigator.navigate(NavigationEvent.ToDetails(country.alphaCode))
     }
 
     sealed class UiState {

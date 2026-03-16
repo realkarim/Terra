@@ -6,8 +6,6 @@ import com.realkarim.country.model.Country
 import com.realkarim.country.usecase.GetCountryDetailsUseCase
 import com.realkarim.domain.error.DomainError
 import com.realkarim.domain.result.DomainOutcome
-import com.realkarim.navigation.NavigationEvent
-import com.realkarim.navigation.Navigator
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -22,7 +20,6 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject constructor(
     private val getCountryDetailsUseCase: GetCountryDetailsUseCase,
-    private val navigator: Navigator,
     @Assisted private val alphaCode: String,
 ) : ViewModel() {
 
@@ -48,10 +45,6 @@ class DetailsViewModel @AssistedInject constructor(
                 is DomainOutcome.Empty -> _uiState.update { UiState.Error(DomainError.UnknownError) }
             }
         }
-    }
-
-    fun goToBorderCountry(alphaCode: String) {
-        navigator.navigate(NavigationEvent.ToDetails(alphaCode))
     }
 
     sealed class UiState {
