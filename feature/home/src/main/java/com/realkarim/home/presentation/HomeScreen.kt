@@ -50,7 +50,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.realkarim.country.model.Country
-import com.realkarim.domain.error.DomainError
 
 @Composable
 fun HomeScreen(
@@ -115,7 +114,7 @@ private fun HomeScreen(
                 }
             }
             is HomeViewModel.UiState.Error -> ErrorContent(
-                message = uiState.error.toMessage(),
+                error = uiState.error,
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
         }
@@ -209,13 +208,8 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
     }
 }
 
-private fun DomainError.toMessage(): String = when (this) {
-    is DomainError.NetworkError -> message
-    DomainError.UnknownError -> "Something went wrong"
-}
-
 @Composable
-private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
+private fun ErrorContent(error: UiError, modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -226,7 +220,13 @@ private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = message,
+                text = when (error) {
+                    UiError.Offline -> "No internet connection"
+                    UiError.Timeout -> "Request timed out"
+                    UiError.SessionExpired -> "Session expired"
+                    UiError.NotFound -> "Countries not found"
+                    UiError.Generic -> "An unexpected error occurred"
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

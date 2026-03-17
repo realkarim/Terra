@@ -38,7 +38,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.realkarim.country.model.Country
-import com.realkarim.domain.error.DomainError
 
 @Composable
 fun DetailsScreen(
@@ -79,16 +78,11 @@ private fun DetailsScreen(
                 modifier = Modifier.padding(innerPaddings)
             )
             is DetailsViewModel.UiState.Error -> ErrorContent(
-                message = uiState.error.toMessage(),
+                error = uiState.error,
                 modifier = Modifier.padding(innerPaddings).fillMaxSize()
             )
         }
     }
-}
-
-private fun DomainError.toMessage(): String = when (this) {
-    is DomainError.NetworkError -> message
-    DomainError.UnknownError -> "Something went wrong"
 }
 
 @Composable
@@ -99,10 +93,16 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
+private fun ErrorContent(error: UiError, modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Text(
-            text = message,
+            text = when (error) {
+                UiError.Offline -> "No internet connection"
+                UiError.Timeout -> "Request timed out"
+                UiError.SessionExpired -> "Session expired"
+                UiError.NotFound -> "Country not found"
+                UiError.Generic -> "Something went wrong"
+            },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error
         )

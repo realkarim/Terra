@@ -40,7 +40,8 @@ app/
 
 - Jetpack Compose screens and `@HiltViewModel` ViewModels.
 - ViewModels expose a single `StateFlow<UiState>` via `stateIn(WhileSubscribed(5_000))`.
-- No business logic — ViewModels call use cases and translate `DomainOutcome` into `UiState`.
+- No business logic — ViewModels call use cases and translate `Result` into `UiState`.
+- Errors are mapped from `DomainError` → `UiError` via `UiErrorMapper`; `UiState.Error` carries a `UiError`. Screens render `UiError` directly — no error formatting in ViewModels.
 - Navigation is triggered by emitting `NavigationEvent` to the `Navigator` singleton; ViewModels never touch `NavController`.
 
 ### Domain (`core/domain/*`)
@@ -49,67 +50,81 @@ Two sub-modules:
 
 | Module | Contents |
 |---|---|
-| `core:domain:common` | `DomainOutcome`, `DomainError` |
+| `core:domain:common` | `DomainError`, `Result` |
 | `core:domain:country` | `Country` model (+ nested models), `CountryRepository` interface, use case interfaces + impls, `CountryUseCaseModule` |
 
-Use cases are the only entry point into the domain from the presentation layer. Each use case wraps one or more repository calls and contains any domain logic (e.g. deciding which repository method to invoke).
+Use cases are the entry point into the domain from the presentation layer. Trivial single-repository pass-throughs (no added orchestration or business logic) may be skipped — the ViewModel may call the repository directly. Use cases earn their place when they combine repositories, enforce rules, or apply domain logic.
 
 ### Data (`core/data/country`)
 
 - `CountryRepositoryImpl` implements `CountryRepository`.
-- `CountryRemoteImpl` wraps the generic `NetworkDataSource<CountryService>`.
-- DTOs (`CountryDto`, etc.) and mappers (`Mapper.kt`, `ErrorMapper.kt`) live here.
+- `CountryRemoteImpl` calls `CountryService` directly — no wrapper layer.
+- DTOs (`CountryDto`, etc.) and domain mappers (`Mapper.kt`) live here.
+- `DataError` (internal sealed interface) and `DataErrorMapper` (internal) live here — they never cross the module boundary.
 - `DataModule` binds all data-layer dependencies via Hilt.
 
 ### Network (`core/network`)
 
-- `NetworkDataSource<SERVICE>` — generic Retrofit wrapper that executes any `suspend SERVICE.() -> Response<R>` and returns a `NetworkOutcome`.
 - `ServiceFactory` creates Retrofit service instances.
-- `ErrorHandler` parses error bodies into `ErrorResponse`.
+- Retrofit service interfaces use plain `suspend fun` return types (no `Response<T>` wrapper) — Retrofit throws `HttpException` for 4xx/5xx responses natively.
+- The network layer has no knowledge of `DataError`, `DomainError`, or any result type — exception translation happens in the data layer.
 
 ---
 
 ## Result Types
 
-Three sealed types flow through the stack, each scoped to its layer:
+Three typed representations flow through the stack. Each is scoped to its layer. See [`ErrorHandling.md`](./ErrorHandling.md) for the full rules.
 
 ```
-NetworkOutcome<DATA, ErrorResponse>   →   DomainOutcome<DATA, DomainError>   →   UiState
-     (network)                                   (domain)                        (presentation)
+Infrastructure Exception
+        ↓
+   DataError          ← internal to core:data:country, never exported
+        ↓
+  DataErrorMapper     ← internal to core:data:country, exhaustive when
+        ↓
+  DomainError         ← defined in core:domain:common, crosses the boundary
+        ↓
+  UiErrorMapper       ← in presentation layer
+        ↓
+    UiError           ← in presentation layer
+        ↓
+    UiState           ← consumed by Compose screens
 ```
 
-### `NetworkOutcome` (`core:network`)
+### `Result` (`core:domain:common`)
 
 ```kotlin
-sealed class NetworkOutcome<out DATA, out ERROR> {
-    data class Success<out DATA>(val data: DATA)
-    data class Error<out ERROR>(val error: ERROR)   // carries ErrorResponse
-    data object Empty
+sealed interface Result<out T, out E> {
+    data class Success<T>(val data: T) : Result<T, Nothing>
+    data class Failure<E>(val error: E) : Result<Nothing, E>
 }
 ```
 
-### `DomainOutcome` (`core:domain:common`)
-
-```kotlin
-sealed class DomainOutcome<out DATA, out ERROR> {
-    data class Success<out DATA>(val data: DATA)
-    data class Error<out ERROR>(val error: ERROR)   // carries DomainError
-    data object Empty
-}
-```
-
-Includes a `map {}` operator for transforming the success value without unwrapping.
+All operations that may fail return a `Result`. Exceptions must not cross layer boundaries.
 
 ### `DomainError` (`core:domain:common`)
 
 ```kotlin
-sealed class DomainError {
-    data class NetworkError(val code: String, val message: String, val fields: List<String>)
-    data object UnknownError
+sealed interface DomainError {
+    object Offline      : DomainError
+    object Timeout      : DomainError
+    object Unauthorized : DomainError
+    object Unexpected   : DomainError
 }
 ```
 
-`UiState.Error` carries a `DomainError` (not a string). Screens convert it to a user-facing message via a local `DomainError.toMessage()` extension — the ViewModel never formats strings.
+Feature-scoped errors extend `DomainError` as separate sealed interfaces (e.g. `CountryError`). Rules:
+- MUST represent business failures, not HTTP codes or infrastructure concepts.
+- MUST NOT reference Android framework types.
+- Shared errors (`Offline`, `Timeout`, `Unauthorized`, `Unexpected`) live in the base `DomainError`.
+
+### `DataError` (`core:data:country` — internal)
+
+An `internal sealed interface` that classifies infrastructure failures before they are mapped to `DomainError`. Never appears in any public API or outside the data module.
+
+### `UiError` (presentation)
+
+Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). `UiState.Error` carries a `UiError`, not a `DomainError`.
 
 ---
 
@@ -128,13 +143,21 @@ RegionalBlocDto ──toDomain()──▶  RegionalBloc
 
 All nullable DTO fields are unwrapped with `.orEmpty()` / `?: 0` so the domain model is always non-null.
 
-### ErrorResponse → DomainError (`core:data:country/.../mapper/ErrorMapper.kt`)
+### DataError → DomainError (`core:data:country/.../mapper/DataErrorMapper.kt`)
 
 ```
-ErrorResponse?  ──toDomainError()──▶  DomainError
+DataError  ──DataErrorMapper.map()──▶  DomainError
 ```
 
-This mapper lives in `core:data:country` (not in `core:domain:common`) to preserve the dependency rule: domain must not know about network types.
+This mapper is `internal` to `core:data:country`. The `when` expression must be **exhaustive** (no `else` branch) so that adding a new `DataError` variant produces a compile error. This is the single mapping site for infrastructure → domain errors.
+
+### DomainError → UiError (presentation)
+
+```
+DomainError  ──UiErrorMapper.map()──▶  UiError
+```
+
+`UiErrorMapper` lives in the presentation layer and may use `else` as a safe fallback — unknown domain errors display a generic message rather than crashing.
 
 ---
 
@@ -183,7 +206,7 @@ Hilt is used throughout. All modules are installed in `SingletonComponent`.
 | Hilt Module | Location | Provides |
 |---|---|---|
 | `NetworkModule` | `core:network` | `Gson`, `OkHttpClient`, `ServiceFactory` |
-| `DataModule` | `core:data:country` | `CountryService`, `NetworkDataSource`, `CountryRemote`, `CountryRepository` |
+| `DataModule` | `core:data:country` | `CountryService`, `CountryRemote`, `CountryRepository` |
 | `CountryUseCaseModule` | `core:domain:country` | Use case bindings (`@Binds`) |
 | `NavigationModule` | `core:navigation` | `Navigator` singleton |
 
@@ -198,7 +221,7 @@ Use case bindings use `@Binds` (not `@Provides`) since both interface and implem
 | `GetAllCountriesUseCase` | `invoke()` | `countryRepository.getAllCountries()` |
 | `GetCountryDetailsUseCase` | `byAlphaCode(code)` | `countryRepository.getCountryByAlphaCode(code)` |
 
-Use cases are the only classes the presentation layer depends on from the domain. The `CountryRepository` interface is never referenced directly in a ViewModel.
+Use cases depend only on domain-owned repository interfaces and must not reference `DataError` or any data-layer type. The `CountryRepository` interface is never referenced directly in a ViewModel.
 
 ---
 

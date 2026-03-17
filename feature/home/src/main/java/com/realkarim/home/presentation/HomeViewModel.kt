@@ -3,9 +3,8 @@ package com.realkarim.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realkarim.country.model.Country
-import com.realkarim.domain.error.DomainError
-import com.realkarim.domain.result.DomainOutcome
 import com.realkarim.country.usecase.GetAllCountriesUseCase
+import com.realkarim.domain.result.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,12 +16,13 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getAllCountriesUseCase: GetAllCountriesUseCase,
+    private val errorMapper: UiErrorMapper,
 ) : ViewModel() {
 
     private sealed class LoadResult {
         object Loading : LoadResult()
         data class Loaded(val countries: List<Country>) : LoadResult()
-        data class Failed(val error: DomainError) : LoadResult()
+        data class Failed(val error: UiError) : LoadResult()
     }
 
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
@@ -63,9 +63,8 @@ class HomeViewModel @Inject constructor(
     private fun loadCountries() {
         viewModelScope.launch {
             _loadResult.value = when (val result = getAllCountriesUseCase()) {
-                is DomainOutcome.Success -> LoadResult.Loaded(result.data)
-                is DomainOutcome.Error -> LoadResult.Failed(result.error)
-                is DomainOutcome.Empty -> LoadResult.Failed(DomainError.UnknownError)
+                is Result.Success -> LoadResult.Loaded(result.data)
+                is Result.Failure -> LoadResult.Failed(errorMapper.map(result.error))
             }
         }
     }
@@ -86,6 +85,6 @@ class HomeViewModel @Inject constructor(
             val searchQuery: String,
             val selectedRegion: String?,
         ) : UiState()
-        data class Error(val error: DomainError) : UiState()
+        data class Error(val error: UiError) : UiState()
     }
 }

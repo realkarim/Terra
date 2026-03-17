@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realkarim.country.model.Country
 import com.realkarim.country.usecase.GetCountryDetailsUseCase
-import com.realkarim.domain.error.DomainError
-import com.realkarim.domain.result.DomainOutcome
+import com.realkarim.domain.result.Result
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -20,6 +19,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject constructor(
     private val getCountryDetailsUseCase: GetCountryDetailsUseCase,
+    private val errorMapper: UiErrorMapper,
     @Assisted private val alphaCode: String,
 ) : ViewModel() {
 
@@ -40,9 +40,8 @@ class DetailsViewModel @AssistedInject constructor(
     private fun showCountryDetails() {
         viewModelScope.launch {
             when (val result = getCountryDetailsUseCase.byAlphaCode(alphaCode)) {
-                is DomainOutcome.Success -> _uiState.update { UiState.Success(result.data) }
-                is DomainOutcome.Error -> _uiState.update { UiState.Error(result.error) }
-                is DomainOutcome.Empty -> _uiState.update { UiState.Error(DomainError.UnknownError) }
+                is Result.Success -> _uiState.update { UiState.Success(result.data) }
+                is Result.Failure -> _uiState.update { UiState.Error(errorMapper.map(result.error)) }
             }
         }
     }
@@ -50,6 +49,6 @@ class DetailsViewModel @AssistedInject constructor(
     sealed class UiState {
         object Loading : UiState()
         data class Success(val country: Country) : UiState()
-        data class Error(val error: DomainError) : UiState()
+        data class Error(val error: UiError) : UiState()
     }
 }
