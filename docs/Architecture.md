@@ -60,7 +60,7 @@ Use cases are the entry point into the domain from the presentation layer. Trivi
 - `CountryRepositoryImpl` implements `CountryRepository`.
 - `CountryRemoteImpl` calls `CountryService` directly — no wrapper layer.
 - DTOs (`CountryDto`, etc.) and domain mappers (`Mapper.kt`) live here.
-- `DataError` (internal sealed interface) and `DataErrorMapper` (internal) live here — they never cross the module boundary.
+- Exception-to-domain mapping happens inline in `CountryRepositoryImpl.safeCall()` — no intermediate `DataError` type.
 - `DataModule` binds all data-layer dependencies via Hilt.
 
 ### Network (`core/network`)
@@ -78,10 +78,8 @@ Three typed representations flow through the stack. Each is scoped to its layer.
 ```
 Infrastructure Exception
         ↓
-   DataError          ← internal to core:data:country, never exported
-        ↓
-  DataErrorMapper     ← internal to core:data:country, exhaustive when
-        ↓
+  safeCall()          ← private, in CountryRepositoryImpl; maps exceptions
+        ↓               directly to DomainError / CountryError
   DomainError         ← defined in core:domain:common, crosses the boundary
         ↓
   UiErrorMapper       ← in presentation layer
@@ -105,7 +103,7 @@ All operations that may fail return a `Result`. Exceptions must not cross layer 
 ### `DomainError` (`core:domain:common`)
 
 ```kotlin
-sealed interface DomainError {
+interface DomainError {
     object Offline      : DomainError
     object Timeout      : DomainError
     object Unauthorized : DomainError
@@ -113,10 +111,11 @@ sealed interface DomainError {
 }
 ```
 
-Feature-scoped errors extend `DomainError` as separate sealed interfaces (e.g. `CountryError`). Rules:
+`DomainError` is a plain interface (not sealed) so that feature modules in separate Gradle modules can extend it. Feature-scoped errors live in their own domain module as sealed interfaces (e.g. `CountryError` in `core:domain:country`). Rules:
 - MUST represent business failures, not HTTP codes or infrastructure concepts.
 - MUST NOT reference Android framework types.
 - Shared errors (`Offline`, `Timeout`, `Unauthorized`, `Unexpected`) live in the base `DomainError`.
+- Exhaustive `when` is enforced on `DataError` (sealed, same module) — not on `DomainError`.
 
 ### `DataError` (`core:data:country` — internal)
 
@@ -143,13 +142,22 @@ RegionalBlocDto ──toDomain()──▶  RegionalBloc
 
 All nullable DTO fields are unwrapped with `.orEmpty()` / `?: 0` so the domain model is always non-null.
 
-### DataError → DomainError (`core:data:country/.../mapper/DataErrorMapper.kt`)
+### Exception → DomainError (`core:data:country/.../repository/CountryRepositoryImpl.kt`)
+
+Exception classification and domain mapping happen in one step inside the private `safeCall()` function:
 
 ```
-DataError  ──DataErrorMapper.map()──▶  DomainError
+SocketTimeoutException  →  DomainError.Timeout
+IOException             →  DomainError.Offline
+HttpException 401/403   →  DomainError.Unauthorized
+HttpException 404       →  CountryError.NotFound
+JsonSyntaxException     →  DomainError.Unexpected
+JsonParseException      →  DomainError.Unexpected
+Exception (catch-all)   →  DomainError.Unexpected
+CancellationException   →  rethrown (never swallowed)
 ```
 
-This mapper is `internal` to `core:data:country`. The `when` expression must be **exhaustive** (no `else` branch) so that adding a new `DataError` variant produces a compile error. This is the single mapping site for infrastructure → domain errors.
+This is the single mapping site for infrastructure → domain errors. No intermediate `DataError` type is needed since there is only one repository.
 
 ### DomainError → UiError (presentation)
 

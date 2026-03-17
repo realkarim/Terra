@@ -123,13 +123,18 @@ any infrastructure type.
 
 Domain errors represent **business meaning**.
 
-As features grow, a single flat sealed interface becomes unmanageable.
+As features grow, a single flat interface becomes unmanageable.
 Domain errors should be **organized hierarchically** using a common
-sealed interface base with **feature-scoped subtypes**.
+interface base with **feature-scoped sealed subtypes**.
+
+> **Multi-module note:** `DomainError` must be a plain `interface`, not
+> `sealed interface`. Kotlin prohibits extending a sealed type across
+> Gradle module boundaries. Feature-scoped subtypes are `sealed` within
+> their own module, which is where exhaustiveness is enforced.
 
 ``` kotlin
 // domain/error/DomainError.kt
-sealed interface DomainError {
+interface DomainError {
 
     /** Errors shared across all features. */
     object Offline : DomainError
@@ -140,7 +145,7 @@ sealed interface DomainError {
 ```
 
 ``` kotlin
-// domain/error/UserError.kt
+// domain/error/UserError.kt  (inside the user domain module)
 sealed interface UserError : DomainError {
 
     object NotFound : UserError
@@ -275,8 +280,15 @@ The data layer interacts with:
 -   file systems
 -   external SDKs
 
-The data layer converts **platform exceptions → DataError → DomainError**
-entirely internally. Nothing outside the data module ever sees `DataError`.
+The data layer converts **platform exceptions → DomainError** entirely
+internally. Two approaches are valid depending on complexity:
+
+| Approach | When to use |
+|---|---|
+| **Direct mapping** — exceptions mapped straight to `DomainError` inside `safeCall()` | Single repository; exception cases map cleanly to domain types |
+| **Two-step mapping** — `Exception → DataError → DomainError` via a `DataErrorMapper` | Multiple repositories where the same HTTP 404 means different things per feature |
+
+In Terra, direct mapping is used. `CountryRepositoryImpl.safeCall()` is the single site where exceptions are classified and translated to `DomainError` / `CountryError`.
 
 ------------------------------------------------------------------------
 
