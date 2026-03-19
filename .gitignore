@@ -7,6 +7,7 @@
 **/build/
 !gradle-wrapper.jar
 .gradle-cache/
+gradle/gradle-daemon-jvm.properties
 
 # === Local Properties ===
 local.properties
