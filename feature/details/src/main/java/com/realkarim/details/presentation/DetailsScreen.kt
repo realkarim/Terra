@@ -17,9 +17,14 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
@@ -54,6 +59,7 @@ fun DetailsScreen(
     DetailsScreen(
         uiState = uiState,
         onBorderClick = navigation::onBorderCountryClick,
+        onFavouriteToggle = viewModel::onFavouriteToggle,
         modifier = modifier
     )
 }
@@ -62,6 +68,7 @@ fun DetailsScreen(
 private fun DetailsScreen(
     uiState: DetailsViewModel.UiState,
     onBorderClick: (String) -> Unit,
+    onFavouriteToggle: (Country) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -74,7 +81,9 @@ private fun DetailsScreen(
             )
             is DetailsViewModel.UiState.Success -> Details(
                 country = uiState.country,
+                isFavourite = uiState.isFavourite,
                 onBorderClick = onBorderClick,
+                onFavouriteToggle = onFavouriteToggle,
                 modifier = Modifier.padding(innerPaddings)
             )
             is DetailsViewModel.UiState.Error -> ErrorContent(
@@ -112,7 +121,9 @@ private fun ErrorContent(error: UiError, modifier: Modifier = Modifier) {
 @Composable
 private fun Details(
     country: Country,
+    isFavourite: Boolean,
     onBorderClick: (String) -> Unit,
+    onFavouriteToggle: (Country) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -120,7 +131,7 @@ private fun Details(
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
-        FlagHero(country = country)
+        FlagHero(country = country, isFavourite = isFavourite, onFavouriteToggle = onFavouriteToggle)
 
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -180,7 +191,12 @@ private fun Details(
 }
 
 @Composable
-private fun FlagHero(country: Country, modifier: Modifier = Modifier) {
+private fun FlagHero(
+    country: Country,
+    isFavourite: Boolean,
+    onFavouriteToggle: (Country) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -192,6 +208,16 @@ private fun FlagHero(country: Country, modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        IconButton(
+            onClick = { onFavouriteToggle(country) },
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            Icon(
+                imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = if (isFavourite) "Remove from favourites" else "Add to favourites",
+                tint = if (isFavourite) MaterialTheme.colorScheme.error else Color.White,
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -313,7 +339,7 @@ private fun ChipSection(
 private fun DetailsScreenPreview() {
     DetailsScreen(
         uiState = DetailsViewModel.UiState.Success(
-            Country(
+            country = Country(
                 name = "Testland",
                 alphaCode = "TST",
                 capital = "Test City",
@@ -329,8 +355,10 @@ private fun DetailsScreenPreview() {
                 currencies = listOf(),
                 languages = listOf(),
                 regionalBlocs = listOf()
-            )
+            ),
+            isFavourite = false,
         ),
         onBorderClick = {},
+        onFavouriteToggle = {},
     )
 }

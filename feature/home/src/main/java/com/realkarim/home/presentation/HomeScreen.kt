@@ -64,6 +64,7 @@ fun HomeScreen(
         onCountryClick = { country -> navigation.onCountryClick(country.alphaCode) },
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onRegionSelected = viewModel::onRegionSelected,
+        onFavouritesFilterToggle = viewModel::onFavouritesFilterToggle,
         modifier = modifier,
     )
 }
@@ -75,6 +76,7 @@ private fun HomeScreen(
     onCountryClick: (Country) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onRegionSelected: (String?) -> Unit,
+    onFavouritesFilterToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -96,13 +98,13 @@ private fun HomeScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                 )
-                if (uiState.regions.isNotEmpty()) {
-                    RegionFilters(
-                        regions = uiState.regions,
-                        selectedRegion = uiState.selectedRegion,
-                        onRegionSelected = onRegionSelected,
-                    )
-                }
+                RegionFilters(
+                    regions = uiState.regions,
+                    selectedRegion = uiState.selectedRegion,
+                    onRegionSelected = onRegionSelected,
+                    showOnlyFavourites = uiState.showOnlyFavourites,
+                    onFavouritesFilterToggle = onFavouritesFilterToggle,
+                )
                 if (uiState.countries.isEmpty()) {
                     EmptySearchContent(modifier = Modifier.fillMaxSize())
                 } else {
@@ -186,11 +188,20 @@ private fun RegionFilters(
     regions: List<String>,
     selectedRegion: String?,
     onRegionSelected: (String?) -> Unit,
+    showOnlyFavourites: Boolean,
+    onFavouritesFilterToggle: () -> Unit,
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        item {
+            FilterChip(
+                selected = showOnlyFavourites,
+                onClick = onFavouritesFilterToggle,
+                label = { Text("Favourites") },
+            )
+        }
         items(regions) { region ->
             FilterChip(
                 selected = selectedRegion == region,
@@ -393,9 +404,11 @@ fun HomeScreenPreview() {
             regions = listOf("Americas", "Europe"),
             searchQuery = "",
             selectedRegion = null,
+            showOnlyFavourites = false,
         ),
         onCountryClick = {},
         onSearchQueryChange = {},
         onRegionSelected = {},
+        onFavouritesFilterToggle = {},
     )
 }

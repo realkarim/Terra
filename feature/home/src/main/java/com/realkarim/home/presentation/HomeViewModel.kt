@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.realkarim.country.model.Country
 import com.realkarim.country.usecase.GetAllCountriesUseCase
 import com.realkarim.domain.result.Result
+import com.realkarim.favourites.usecase.GetFavouriteCountriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getAllCountriesUseCase: GetAllCountriesUseCase,
+    private val getFavouriteCountriesUseCase: GetFavouriteCountriesUseCase,
     private val errorMapper: UiErrorMapper,
 ) : ViewModel() {
 
@@ -28,25 +30,33 @@ class HomeViewModel @Inject constructor(
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
     private val _searchQuery = MutableStateFlow("")
     private val _selectedRegion = MutableStateFlow<String?>(null)
+    private val _showOnlyFavourites = MutableStateFlow(false)
 
     val uiState = combine(
-        _loadResult, _searchQuery, _selectedRegion
-    ) { loadResult, query, region ->
+        _loadResult,
+        _searchQuery,
+        _selectedRegion,
+        _showOnlyFavourites,
+        getFavouriteCountriesUseCase(),
+    ) { loadResult, query, region, onlyFavourites, favourites ->
         when (loadResult) {
             LoadResult.Loading -> UiState.Loading
             is LoadResult.Failed -> UiState.Error(loadResult.error)
             is LoadResult.Loaded -> {
+                val favouriteAlphaCodes = favourites.map { it.alphaCode }.toSet()
                 val all = loadResult.countries
                 val regions = all.map { it.region }.distinct().sorted()
                 val filtered = all.filter { country ->
                     (query.isBlank() || country.name.contains(query, ignoreCase = true))
                         && (region == null || country.region == region)
+                        && (!onlyFavourites || country.alphaCode in favouriteAlphaCodes)
                 }
                 UiState.Success(
                     countries = filtered,
                     regions = regions,
                     searchQuery = query,
                     selectedRegion = region,
+                    showOnlyFavourites = onlyFavourites,
                 )
             }
         }
@@ -77,6 +87,10 @@ class HomeViewModel @Inject constructor(
         _selectedRegion.value = if (_selectedRegion.value == region) null else region
     }
 
+    fun onFavouritesFilterToggle() {
+        _showOnlyFavourites.value = !_showOnlyFavourites.value
+    }
+
     sealed class UiState {
         object Loading : UiState()
         data class Success(
@@ -84,6 +98,7 @@ class HomeViewModel @Inject constructor(
             val regions: List<String>,
             val searchQuery: String,
             val selectedRegion: String?,
+            val showOnlyFavourites: Boolean,
         ) : UiState()
         data class Error(val error: UiError) : UiState()
     }
