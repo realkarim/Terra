@@ -66,7 +66,7 @@ fun DetailsScreen(
 
 @Composable
 private fun DetailsScreen(
-    uiState: DetailsViewModel.UiState,
+    uiState: DetailsContract.UiState,
     onBorderClick: (String) -> Unit,
     onFavouriteToggle: (Country) -> Unit,
     modifier: Modifier = Modifier
@@ -76,17 +76,17 @@ private fun DetailsScreen(
         contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPaddings ->
         when (uiState) {
-            is DetailsViewModel.UiState.Loading -> LoadingContent(
+            is DetailsContract.UiState.Loading -> LoadingContent(
                 modifier = Modifier.padding(innerPaddings).fillMaxSize()
             )
-            is DetailsViewModel.UiState.Success -> Details(
+            is DetailsContract.UiState.Success -> Details(
                 country = uiState.country,
                 isFavourite = uiState.isFavourite,
                 onBorderClick = onBorderClick,
                 onFavouriteToggle = onFavouriteToggle,
                 modifier = Modifier.padding(innerPaddings)
             )
-            is DetailsViewModel.UiState.Error -> ErrorContent(
+            is DetailsContract.UiState.Error -> ErrorContent(
                 error = uiState.error,
                 modifier = Modifier.padding(innerPaddings).fillMaxSize()
             )
@@ -102,15 +102,15 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ErrorContent(error: UiError, modifier: Modifier = Modifier) {
+private fun ErrorContent(error: DetailsContract.UiError, modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Text(
             text = when (error) {
-                UiError.Offline -> "No internet connection"
-                UiError.Timeout -> "Request timed out"
-                UiError.SessionExpired -> "Session expired"
-                UiError.NotFound -> "Country not found"
-                UiError.Generic -> "Something went wrong"
+                DetailsContract.UiError.Offline -> "No internet connection"
+                DetailsContract.UiError.Timeout -> "Request timed out"
+                DetailsContract.UiError.SessionExpired -> "Session expired"
+                DetailsContract.UiError.NotFound -> "Country not found"
+                DetailsContract.UiError.Generic -> "Something went wrong"
             },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error
@@ -338,7 +338,7 @@ private fun ChipSection(
 @Composable
 private fun DetailsScreenPreview() {
     DetailsScreen(
-        uiState = DetailsViewModel.UiState.Success(
+        uiState = DetailsContract.UiState.Success(
             country = Country(
                 name = "Testland",
                 alphaCode = "TST",

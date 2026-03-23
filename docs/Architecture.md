@@ -41,8 +41,31 @@ app/
 - Jetpack Compose screens and `@HiltViewModel` ViewModels.
 - ViewModels expose a single `StateFlow<UiState>` via `stateIn(WhileSubscribed(5_000))`.
 - No business logic — ViewModels call use cases and translate `Result` into `UiState`.
-- Errors are mapped from `DomainError` → `UiError` via `UiErrorMapper`; `UiState.Error` carries a `UiError`. Screens render `UiError` directly — no error formatting in ViewModels.
+- Errors are mapped from `DomainError` → `UiError` via `UiErrorMapper`; `UiState.Error` carries a `UiError`. Both types are defined in the feature's contract. Screens render `UiError` directly — no error formatting in ViewModels.
 - Navigation is triggered by emitting `NavigationEvent` to the `Navigator` singleton; ViewModels never touch `NavController`.
+
+#### Feature Contract
+
+Every feature defines a **contract** — a single file that declares the three building blocks of its presentation layer:
+
+| Type | Role |
+|---|---|
+| `UiError` | Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). Carried by `UiState.Error`. |
+| `UiState` | Sealed interface representing every possible screen state (`Loading`, `Success`, `Error`, …). Exposed as `StateFlow`. |
+| `UiEvent` | Sealed interface of user-driven inputs the screen can send to the ViewModel (button taps, text changes, etc.). |
+| `SideEffect` | Sealed interface of one-time effects the ViewModel sends to the screen (show snackbar, trigger scroll, etc.). Not to be used for navigation — emit a `NavigationEvent` to `Navigator` instead. |
+
+```kotlin
+// feature/home/presentation/HomeContract.kt
+object HomeContract {
+    sealed interface UiError { ... }
+    sealed interface UiState { ... }
+    sealed interface UiEvent { ... }
+    sealed interface SideEffect { ... }
+}
+```
+
+The contract file lives in the `presentation` package alongside `UiErrorMapper` and the navigation interface — no separate sub-package. It is the single source of truth for all presentation-boundary types. Screens, ViewModels, and `UiErrorMapper` reference these types exclusively — no ad-hoc type definitions elsewhere in the feature.
 
 ### Domain (`core/domain/*`)
 
@@ -121,9 +144,9 @@ interface DomainError {
 
 An `internal sealed interface` that classifies infrastructure failures before they are mapped to `DomainError`. Never appears in any public API or outside the data module.
 
-### `UiError` (presentation)
+### `UiError` (feature contract)
 
-Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). `UiState.Error` carries a `UiError`, not a `DomainError`.
+Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). Defined inside each feature's contract object (e.g. `HomeContract.UiError`). `UiState.Error` carries a `UiError`, not a `DomainError`.
 
 ---
 
@@ -162,10 +185,10 @@ This is the single mapping site for infrastructure → domain errors. No interme
 ### DomainError → UiError (presentation)
 
 ```
-DomainError  ──UiErrorMapper.map()──▶  UiError
+DomainError  ──UiErrorMapper.map()──▶  FeatureContract.UiError
 ```
 
-`UiErrorMapper` lives in the presentation layer and may use `else` as a safe fallback — unknown domain errors display a generic message rather than crashing.
+`UiErrorMapper` lives in the presentation layer and returns the feature's own `UiError` type (e.g. `HomeContract.UiError`). It may use `else` as a safe fallback — unknown domain errors display a generic message rather than crashing.
 
 ---
 

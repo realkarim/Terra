@@ -35,7 +35,7 @@ class DetailsViewModel @AssistedInject constructor(
     private sealed class CountryLoad {
         object Loading : CountryLoad()
         data class Loaded(val country: Country) : CountryLoad()
-        data class Failed(val error: UiError) : CountryLoad()
+        data class Failed(val error: DetailsContract.UiError) : CountryLoad()
     }
 
     private val _countryLoad = MutableStateFlow<CountryLoad>(CountryLoad.Loading)
@@ -45,16 +45,16 @@ class DetailsViewModel @AssistedInject constructor(
         observeFavouriteStatusUseCase(alphaCode),
     ) { load, isFavourite ->
         when (load) {
-            CountryLoad.Loading -> UiState.Loading
-            is CountryLoad.Loaded -> UiState.Success(load.country, isFavourite)
-            is CountryLoad.Failed -> UiState.Error(load.error)
+            CountryLoad.Loading -> DetailsContract.UiState.Loading
+            is CountryLoad.Loaded -> DetailsContract.UiState.Success(load.country, isFavourite)
+            is CountryLoad.Failed -> DetailsContract.UiState.Error(load.error)
         }
     }
         .onStart { showCountryDetails() }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = UiState.Loading
+            initialValue = DetailsContract.UiState.Loading
         )
 
     fun onFavouriteToggle(country: Country) {
@@ -70,9 +70,4 @@ class DetailsViewModel @AssistedInject constructor(
         }
     }
 
-    sealed class UiState {
-        object Loading : UiState()
-        data class Success(val country: Country, val isFavourite: Boolean) : UiState()
-        data class Error(val error: UiError) : UiState()
-    }
 }

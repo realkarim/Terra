@@ -24,7 +24,7 @@ class HomeViewModel @Inject constructor(
     private sealed class LoadResult {
         object Loading : LoadResult()
         data class Loaded(val countries: List<Country>) : LoadResult()
-        data class Failed(val error: UiError) : LoadResult()
+        data class Failed(val error: HomeContract.UiError) : LoadResult()
     }
 
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
@@ -40,8 +40,8 @@ class HomeViewModel @Inject constructor(
         getFavouriteCountriesUseCase(),
     ) { loadResult, query, region, onlyFavourites, favourites ->
         when (loadResult) {
-            LoadResult.Loading -> UiState.Loading
-            is LoadResult.Failed -> UiState.Error(loadResult.error)
+            LoadResult.Loading -> HomeContract.UiState.Loading
+            is LoadResult.Failed -> HomeContract.UiState.Error(loadResult.error)
             is LoadResult.Loaded -> {
                 val favouriteAlphaCodes = favourites.map { it.alphaCode }.toSet()
                 val all = loadResult.countries
@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
                         && (region == null || country.region == region)
                         && (!onlyFavourites || country.alphaCode in favouriteAlphaCodes)
                 }
-                UiState.Success(
+                HomeContract.UiState.Success(
                     countries = filtered,
                     regions = regions,
                     searchQuery = query,
@@ -63,7 +63,7 @@ class HomeViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = UiState.Loading
+        initialValue = HomeContract.UiState.Loading
     )
 
     init {
@@ -89,17 +89,5 @@ class HomeViewModel @Inject constructor(
 
     fun onFavouritesFilterToggle() {
         _showOnlyFavourites.value = !_showOnlyFavourites.value
-    }
-
-    sealed class UiState {
-        object Loading : UiState()
-        data class Success(
-            val countries: List<Country>,
-            val regions: List<String>,
-            val searchQuery: String,
-            val selectedRegion: String?,
-            val showOnlyFavourites: Boolean,
-        ) : UiState()
-        data class Error(val error: UiError) : UiState()
     }
 }

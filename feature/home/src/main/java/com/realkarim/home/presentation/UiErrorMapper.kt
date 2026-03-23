@@ -6,11 +6,11 @@ import javax.inject.Inject
 
 class UiErrorMapper @Inject constructor() {
 
-    fun map(error: DomainError): UiError = when (error) {
-        DomainError.Offline -> UiError.Offline
-        DomainError.Timeout -> UiError.Timeout
-        DomainError.Unauthorized -> UiError.SessionExpired
-        is CountryError.NotFound -> UiError.NotFound
-        else -> UiError.Generic
+    fun map(error: DomainError): HomeContract.UiError = when (error) {
+        DomainError.Offline -> HomeContract.UiError.Offline
+        DomainError.Timeout -> HomeContract.UiError.Timeout
+        DomainError.Unauthorized -> HomeContract.UiError.SessionExpired
+        is CountryError.NotFound -> HomeContract.UiError.NotFound
+        else -> HomeContract.UiError.Generic
     }
 }

@@ -72,7 +72,7 @@ fun HomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(
-    uiState: HomeViewModel.UiState,
+    uiState: HomeContract.UiState,
     onCountryClick: (Country) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onRegionSelected: (String?) -> Unit,
@@ -85,10 +85,10 @@ private fun HomeScreen(
         topBar = { HomeTopBar() },
     ) { innerPadding ->
         when (uiState) {
-            is HomeViewModel.UiState.Loading -> LoadingContent(
+            is HomeContract.UiState.Loading -> LoadingContent(
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
-            is HomeViewModel.UiState.Success -> Column(
+            is HomeContract.UiState.Success -> Column(
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             ) {
                 SearchField(
@@ -115,7 +115,7 @@ private fun HomeScreen(
                     )
                 }
             }
-            is HomeViewModel.UiState.Error -> ErrorContent(
+            is HomeContract.UiState.Error -> ErrorContent(
                 error = uiState.error,
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
@@ -220,7 +220,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ErrorContent(error: UiError, modifier: Modifier = Modifier) {
+private fun ErrorContent(error: HomeContract.UiError, modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -232,11 +232,11 @@ private fun ErrorContent(error: UiError, modifier: Modifier = Modifier) {
             )
             Text(
                 text = when (error) {
-                    UiError.Offline -> "No internet connection"
-                    UiError.Timeout -> "Request timed out"
-                    UiError.SessionExpired -> "Session expired"
-                    UiError.NotFound -> "Countries not found"
-                    UiError.Generic -> "An unexpected error occurred"
+                    HomeContract.UiError.Offline -> "No internet connection"
+                    HomeContract.UiError.Timeout -> "Request timed out"
+                    HomeContract.UiError.SessionExpired -> "Session expired"
+                    HomeContract.UiError.NotFound -> "Countries not found"
+                    HomeContract.UiError.Generic -> "An unexpected error occurred"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -347,7 +347,7 @@ fun CountryCard(
 @Composable
 fun HomeScreenPreview() {
     HomeScreen(
-        uiState = HomeViewModel.UiState.Success(
+        uiState = HomeContract.UiState.Success(
             countries = listOf(
                 Country(
                     name = "United States",
