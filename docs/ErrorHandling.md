@@ -177,7 +177,7 @@ Rules:
 ## Scaling Strategy
 
 | Layer of growth | Approach |
-|---|---|
+| --- |---|
 | 1–10 error cases | A single `DomainError` sealed interface is fine |
 | 10–30 error cases | Extract feature-scoped interfaces that extend `DomainError` |
 | 30+ error cases | Consider grouping by bounded context (e.g., `:domain:payments` module) |
@@ -284,11 +284,11 @@ The data layer converts **platform exceptions → DomainError** entirely
 internally. Two approaches are valid depending on complexity:
 
 | Approach | When to use |
-|---|---|
+| --- |---|
 | **Direct mapping** — exceptions mapped straight to `DomainError` inside `safeCall()` | Single repository; exception cases map cleanly to domain types |
 | **Two-step mapping** — `Exception → DataError → DomainError` via a `DataErrorMapper` | Multiple repositories where the same HTTP 404 means different things per feature |
 
-In Terra, direct mapping is used. `CountryRepositoryImpl.safeCall()` is the single site where exceptions are classified and translated to `DomainError` / `CountryError`.
+When there is only one repository, direct mapping is the simpler approach. `[Feature]RepositoryImpl.safeCall()` becomes the single site where all exceptions are classified and translated to `DomainError` / feature-scoped errors.
 
 ------------------------------------------------------------------------
 
@@ -597,20 +597,21 @@ This translation is handled by **UiErrorMapper**. Unchanged from before
 
 # UiError
 
-UiError represents **user‑visible failures**.
+`UiError` represents **user‑visible failures**. It lives inside the feature's contract object alongside `UiState`, `UiEvent`, and `SideEffect`.
 
 ``` kotlin
-sealed interface UiError {
+// feature/[name]/presentation/[Name]Contract.kt
+object [Name]Contract {
 
-    object Offline : UiError
+    sealed interface UiError {
+        data object Offline : UiError
+        data object Timeout : UiError
+        data object SessionExpired : UiError
+        data object NotFound : UiError
+        data object Generic : UiError
+    }
 
-    object Timeout : UiError
-
-    object SessionExpired : UiError
-
-    object NotFound : UiError
-
-    object Generic : UiError
+    // ... UiState, UiEvent, SideEffect
 }
 ```
 
@@ -618,15 +619,18 @@ Rules:
 
 -   MUST represent user-visible failures
 -   MUST NOT contain infrastructure concepts
+-   MUST be defined in the feature contract — not as a standalone file
 
 ------------------------------------------------------------------------
 
 # UiErrorMapper
 
+`UiErrorMapper` returns the feature's own `UiError` type defined in its contract (e.g. `[Name]Contract.UiError`).
+
 ``` kotlin
 class UiErrorMapper {
 
-    fun map(error: DomainError): UiError {
+    fun map(error: DomainError): [Name]Contract.UiError {
 
         return when (error) {
 
@@ -749,14 +753,11 @@ Rules:
 └── repository/
     └── UserRepositoryImpl.kt   ← implements domain interface
 
-:presentation module
-├── mapper/
-│   └── UiErrorMapper.kt
-├── state/
-│   └── UiState.kt
-│   └── UiError.kt
-└── viewmodel/
-    └── UserViewModel.kt
+:presentation module (per feature)
+├── [Name]Contract.kt       ← UiError, UiState, UiEvent, SideEffect
+├── UiErrorMapper.kt
+├── [Name]Navigation.kt
+└── [Name]ViewModel.kt
 ```
 
 ------------------------------------------------------------------------

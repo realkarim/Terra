@@ -1,8 +1,8 @@
-# Terra — Architecture
+# Architecture
 
 ## Overview
 
-Terra follows **Clean Architecture** with **MVVM**, enforced through a strict multi-module Gradle setup. Each layer has a defined direction of dependency; inner layers never know about outer ones.
+This project follows **Clean Architecture** with **MVVM**, enforced through a strict multi-module Gradle setup. Each layer has a defined direction of dependency; inner layers never know about outer ones.
 
 ```
 Presentation  ──▶  Domain  ◀──  Data  ──▶  Network
@@ -15,13 +15,13 @@ Presentation  ──▶  Domain  ◀──  Data  ──▶  Network
 
 ```
 app/
-├── feature:home          ──▶  core:domain:country
-├── feature:details       ──▶  core:domain:country
-├── feature:welcome       ──▶  (standalone)
-├── core:data:country     ──▶  core:domain:country
+├── feature:[a]           ──▶  core:domain:[feature]
+├── feature:[b]           ──▶  core:domain:[feature]
+├── feature:[standalone]  ──▶  (no domain deps)
+├── core:data:[feature]   ──▶  core:domain:[feature]
 │                         ──▶  core:domain:common
 │                         ──▶  core:network
-├── core:domain:country   ──▶  core:domain:common
+├── core:domain:[feature] ──▶  core:domain:common
 ├── core:domain:common    ──▶  (standalone)
 ├── core:network          ──▶  (standalone)
 └── core:navigation       ──▶  (standalone)
@@ -30,7 +30,7 @@ app/
 **Rules:**
 - Feature modules must NOT depend on each other.
 - Domain modules must NOT depend on data or network modules.
-- `app` owns the Hilt component; it depends on all feature modules and `core:data:country` (to keep `DataModule` on the Hilt graph).
+- `app` owns the Hilt component; it depends on all feature modules and `core:data:*` (to keep `DataModule` on the Hilt graph).
 
 ---
 
@@ -46,18 +46,18 @@ app/
 
 #### Feature Contract
 
-Every feature defines a **contract** — a single file that declares the three building blocks of its presentation layer:
+Every feature defines a **contract** — a single file that declares the four building blocks of its presentation layer:
 
-| Type | Role |
-|---|---|
-| `UiError` | Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). Carried by `UiState.Error`. |
-| `UiState` | Sealed interface representing every possible screen state (`Loading`, `Success`, `Error`, …). Exposed as `StateFlow`. |
-| `UiEvent` | Sealed interface of user-driven inputs the screen can send to the ViewModel (button taps, text changes, etc.). |
+| Type         | Role                                                                                                                                                                                           |
+|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `UiError`    | Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). Carried by `UiState.Error`.                                                    |
+| `UiState`    | Sealed interface representing every possible screen state (`Loading`, `Success`, `Error`, …). Exposed as `StateFlow`.                                                                          |
+| `UiEvent`    | Sealed interface of user-driven inputs the screen can send to the ViewModel (button taps, text changes, etc.).                                                                                 |
 | `SideEffect` | Sealed interface of one-time effects the ViewModel sends to the screen (show snackbar, trigger scroll, etc.). Not to be used for navigation — emit a `NavigationEvent` to `Navigator` instead. |
 
-```kotlin
-// feature/home/presentation/HomeContract.kt
-object HomeContract {
+```
+// feature/[name]/presentation/[Name]Contract.kt
+object [Name]Contract {
     sealed interface UiError { ... }
     sealed interface UiState { ... }
     sealed interface UiEvent { ... }
@@ -72,23 +72,23 @@ The contract file lives in the `presentation` package alongside `UiErrorMapper` 
 Two sub-modules:
 
 | Module | Contents |
-|---|---|
+| --- |---|
 | `core:domain:common` | `DomainError`, `Result` |
-| `core:domain:country` | `Country` model (+ nested models), `CountryRepository` interface, use case interfaces + impls, `CountryUseCaseModule` |
+| `core:domain:[feature]` | Domain models, repository interface, use case interfaces + impls, Hilt use case module |
 
 Use cases are the entry point into the domain from the presentation layer. Trivial single-repository pass-throughs (no added orchestration or business logic) may be skipped — the ViewModel may call the repository directly. Use cases earn their place when they combine repositories, enforce rules, or apply domain logic.
 
-### Data (`core/data/country`)
+### Data (`core/data/[feature]`)
 
-- `CountryRepositoryImpl` implements `CountryRepository`.
-- `CountryRemoteImpl` calls `CountryService` directly — no wrapper layer.
-- DTOs (`CountryDto`, etc.) and domain mappers (`Mapper.kt`) live here.
-- Exception-to-domain mapping happens inline in `CountryRepositoryImpl.safeCall()` — no intermediate `DataError` type.
+- `[Feature]RepositoryImpl` implements the domain-owned repository interface.
+- Remote data source calls the Retrofit service directly — no wrapper layer.
+- DTOs and domain mappers live here.
+- Exception-to-domain mapping happens inside a private `safeCall()` in the repository impl — no intermediate `DataError` type is needed when there is only one repository.
 - `DataModule` binds all data-layer dependencies via Hilt.
 
 ### Network (`core/network`)
 
-- `ServiceFactory` creates Retrofit service instances.
+- A service factory creates Retrofit service instances.
 - Retrofit service interfaces use plain `suspend fun` return types (no `Response<T>` wrapper) — Retrofit throws `HttpException` for 4xx/5xx responses natively.
 - The network layer has no knowledge of `DataError`, `DomainError`, or any result type — exception translation happens in the data layer.
 
@@ -101,13 +101,13 @@ Three typed representations flow through the stack. Each is scoped to its layer.
 ```
 Infrastructure Exception
         ↓
-  safeCall()          ← private, in CountryRepositoryImpl; maps exceptions
-        ↓               directly to DomainError / CountryError
+  safeCall()          ← private, in the repository impl; maps exceptions
+        ↓               directly to DomainError / feature-scoped error
   DomainError         ← defined in core:domain:common, crosses the boundary
         ↓
   UiErrorMapper       ← in presentation layer
         ↓
-    UiError           ← in presentation layer
+    UiError           ← defined in the feature contract
         ↓
     UiState           ← consumed by Compose screens
 ```
@@ -134,38 +134,36 @@ interface DomainError {
 }
 ```
 
-`DomainError` is a plain interface (not sealed) so that feature modules in separate Gradle modules can extend it. Feature-scoped errors live in their own domain module as sealed interfaces (e.g. `CountryError` in `core:domain:country`). Rules:
+`DomainError` is a plain interface (not sealed) so that feature modules in separate Gradle modules can extend it. Feature-scoped errors live in their own domain module as sealed interfaces (e.g. `ItemError` in `core:domain:[feature]`). Rules:
 - MUST represent business failures, not HTTP codes or infrastructure concepts.
 - MUST NOT reference Android framework types.
 - Shared errors (`Offline`, `Timeout`, `Unauthorized`, `Unexpected`) live in the base `DomainError`.
 - Exhaustive `when` is enforced on `DataError` (sealed, same module) — not on `DomainError`.
 
-### `DataError` (`core:data:country` — internal)
+### `DataError` (`core:data:[feature]` — internal)
 
 An `internal sealed interface` that classifies infrastructure failures before they are mapped to `DomainError`. Never appears in any public API or outside the data module.
 
 ### `UiError` (feature contract)
 
-Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). Defined inside each feature's contract object (e.g. `HomeContract.UiError`). `UiState.Error` carries a `UiError`, not a `DomainError`.
+Sealed interface of user-visible failure cases (`Offline`, `Timeout`, `SessionExpired`, `NotFound`, `Generic`). Defined inside each feature's contract object (e.g. `ListContract.UiError`). `UiState.Error` carries a `UiError`, not a `DomainError`.
 
 ---
 
 ## Mappers
 
-### DTO → Domain (`core:data:country/.../mapper/Mapper.kt`)
+### DTO → Domain (`core:data:[feature]/.../mapper/`)
 
 Extension functions on each DTO type:
 
 ```
-CountryDto      ──toDomain()──▶  Country
-CurrencyDto     ──toDomain()──▶  Currency
-LanguageDto     ──toDomain()──▶  Language
-RegionalBlocDto ──toDomain()──▶  RegionalBloc
+[Item]Dto     ──toDomain()──▶  [Item]
+[Sub]Dto      ──toDomain()──▶  [Sub]
 ```
 
 All nullable DTO fields are unwrapped with `.orEmpty()` / `?: 0` so the domain model is always non-null.
 
-### Exception → DomainError (`core:data:country/.../repository/CountryRepositoryImpl.kt`)
+### Exception → DomainError (`core:data:[feature]/.../repository/[Feature]RepositoryImpl.kt`)
 
 Exception classification and domain mapping happen in one step inside the private `safeCall()` function:
 
@@ -173,22 +171,22 @@ Exception classification and domain mapping happen in one step inside the privat
 SocketTimeoutException  →  DomainError.Timeout
 IOException             →  DomainError.Offline
 HttpException 401/403   →  DomainError.Unauthorized
-HttpException 404       →  CountryError.NotFound
+HttpException 404       →  FeatureError.NotFound
 JsonSyntaxException     →  DomainError.Unexpected
 JsonParseException      →  DomainError.Unexpected
 Exception (catch-all)   →  DomainError.Unexpected
 CancellationException   →  rethrown (never swallowed)
 ```
 
-This is the single mapping site for infrastructure → domain errors. No intermediate `DataError` type is needed since there is only one repository.
+This is the single mapping site for infrastructure → domain errors. No intermediate `DataError` type is needed when there is only one repository.
 
 ### DomainError → UiError (presentation)
 
 ```
-DomainError  ──UiErrorMapper.map()──▶  FeatureContract.UiError
+DomainError  ──UiErrorMapper.map()──▶  [Name]Contract.UiError
 ```
 
-`UiErrorMapper` lives in the presentation layer and returns the feature's own `UiError` type (e.g. `HomeContract.UiError`). It may use `else` as a safe fallback — unknown domain errors display a generic message rather than crashing.
+`UiErrorMapper` lives in the presentation layer and returns the feature's own `UiError` type. It may use `else` as a safe fallback — unknown domain errors display a generic message rather than crashing.
 
 ---
 
@@ -207,26 +205,23 @@ ViewModel  ──navigate(event)──▶  Navigator  ──flow──▶  Handl
 ```kotlin
 sealed interface NavigationEvent {
     data object Up
-    data object ToHome
-    data class ToDetails(val alphaCode: String)
+    data object ToList
+    data class ToDetail(val id: String)
 }
 ```
 
-### `DetailsRoute`
+### Route with arguments
 
 ```kotlin
 @Serializable
-data class DetailsRoute(val alphaCode: String)
+data class DetailRoute(val id: String) : NavKey
 ```
 
-The Details screen is always opened by alpha code (ISO 3166-1 alpha-3). Both entry points — tapping a country card and tapping a border chip — pass an alpha code, so no runtime disambiguation is needed.
+Arguments required by a destination are carried directly in the route and read from `SavedStateHandle` in the ViewModel.
 
 ### Flow
 
-1. `HomeViewModel.goToCountryDetails(country)` → `ToDetails(country.alphaCode)`
-2. `DetailsViewModel.goToBorderCountry(alphaCode)` → `ToDetails(alphaCode)`
-3. `HandleNavigation` → `navController.navigateToDetails(event.alphaCode)`
-4. `DetailsViewModel` reads `DetailsRoute.alphaCode` from `SavedStateHandle` → calls `useCase.byAlphaCode(code)`
+Each ViewModel emits a `NavigationEvent` to the `Navigator`. `HandleNavigation` in `app` maps the event to the appropriate `NavController` call. Any arguments required by the destination route are carried in the event payload and forwarded to the route constructor.
 
 ---
 
@@ -235,33 +230,21 @@ The Details screen is always opened by alpha code (ISO 3166-1 alpha-3). Both ent
 Hilt is used throughout. All modules are installed in `SingletonComponent`.
 
 | Hilt Module | Location | Provides |
-|---|---|---|
-| `NetworkModule` | `core:network` | `Gson`, `OkHttpClient`, `ServiceFactory` |
-| `DataModule` | `core:data:country` | `CountryService`, `CountryRemote`, `CountryRepository` |
-| `CountryUseCaseModule` | `core:domain:country` | Use case bindings (`@Binds`) |
+| --- |---| --- |
+| `NetworkModule` | `core:network` | HTTP client, service factory |
+| `DataModule` | `core:data:[feature]` | Retrofit service, remote data source, repository binding |
+| `[Feature]UseCaseModule` | `core:domain:[feature]` | Use case bindings (`@Binds`) |
 | `NavigationModule` | `core:navigation` | `Navigator` singleton |
 
 Use case bindings use `@Binds` (not `@Provides`) since both interface and implementation are in the same module and the impl has an `@Inject` constructor.
 
 ---
 
-## Use Cases (`core:domain:country`)
+## Use Cases (`core:domain:[feature]`)
 
 | Use Case | Method(s) | Repository call |
-|---|---|---|
-| `GetAllCountriesUseCase` | `invoke()` | `countryRepository.getAllCountries()` |
-| `GetCountryDetailsUseCase` | `byAlphaCode(code)` | `countryRepository.getCountryByAlphaCode(code)` |
+| --- |---| --- |
+| `GetAll[Items]UseCase` | `invoke()` | `repository.getAll()` |
+| `Get[Item]DetailsUseCase` | `byId(id)` | `repository.getById(id)` |
 
-Use cases depend only on domain-owned repository interfaces and must not reference `DataError` or any data-layer type. The `CountryRepository` interface is never referenced directly in a ViewModel.
-
----
-
-## Data Source
-
-Country data is fetched from `https://www.apicountries.com/`. The API follows the REST Countries v2 schema.
-
-| Endpoint | Service method |
-|---|---|
-| `GET /countries` | `getAllCountries()` |
-| `GET /name/{name}` | `getCountryByName(name)` |
-| `GET /alpha/{code}` | `getCountryByAlphaCode(code)` |
+Use cases depend only on domain-owned repository interfaces and must not reference `DataError` or any data-layer type. Repository interfaces are never referenced directly in a ViewModel.
