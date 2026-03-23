@@ -26,6 +26,8 @@ material = "1.13.0"
 activity = "1.11.0"
 jetbrainsKotlinJvm = "2.2.20"
 runtime = "1.9.3"
+room = "2.7.0"
+ksp = "2.2.20-2.0.2"
 
 [libraries]
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "runtime" }
@@ -57,6 +59,9 @@ androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigat
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Ui" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
@@ -69,3 +74,4 @@ hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersi
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

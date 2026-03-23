@@ -28,8 +28,10 @@ include(":app")
 // core
 include(":core:network")
 include(":core:data:country")
+include(":core:data:favourites")
 include(":core:domain:common")
 include(":core:domain:country")
+include(":core:domain:favourites")
 
 // features
 include(":feature:welcome")

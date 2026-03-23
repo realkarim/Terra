@@ -37,8 +37,10 @@ android {
 dependencies {
     implementation(project(":core:domain:common"))
     implementation(project(":core:domain:country"))
+    implementation(project(":core:domain:favourites"))
 
     implementation(libs.coil.compose)
+    implementation(libs.androidx.material.icons.core)
     // KAPT
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
