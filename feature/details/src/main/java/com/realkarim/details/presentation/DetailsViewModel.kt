@@ -57,8 +57,12 @@ class DetailsViewModel @AssistedInject constructor(
             initialValue = DetailsContract.UiState.Loading
         )
 
-    fun onFavouriteToggle(country: Country) {
-        viewModelScope.launch { toggleFavouriteUseCase(country) }
+    fun onEvent(event: DetailsContract.UiEvent) {
+        when (event) {
+            is DetailsContract.UiEvent.FavouriteToggled -> viewModelScope.launch {
+                toggleFavouriteUseCase(event.country)
+            }
+        }
     }
 
     private fun showCountryDetails() {

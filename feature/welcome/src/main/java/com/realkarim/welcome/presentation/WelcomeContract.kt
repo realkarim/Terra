@@ -10,5 +10,7 @@ object WelcomeContract {
         data object GetStartedClicked : UiEvent
     }
 
-    sealed interface SideEffect
+    sealed interface SideEffect {
+        data object NavigateToHome : SideEffect
+    }
 }

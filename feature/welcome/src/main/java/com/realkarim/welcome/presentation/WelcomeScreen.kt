@@ -16,8 +16,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
@@ -29,9 +31,18 @@ import androidx.compose.ui.unit.dp
 fun WelcomeScreen(
     navigation: WelcomeNavigation,
     modifier: Modifier = Modifier,
+    viewModel: WelcomeViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(viewModel) {
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                WelcomeContract.SideEffect.NavigateToHome -> navigation.onGetStarted()
+            }
+        }
+    }
+
     WelcomeScreen(
-        onGetStartedClick = navigation::onGetStarted,
+        onGetStartedClick = { viewModel.onEvent(WelcomeContract.UiEvent.GetStartedClicked) },
         modifier = modifier,
     )
 }

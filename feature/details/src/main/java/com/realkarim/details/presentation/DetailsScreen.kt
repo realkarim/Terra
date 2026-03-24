@@ -59,7 +59,7 @@ fun DetailsScreen(
     DetailsScreen(
         uiState = uiState,
         onBorderClick = navigation::onBorderCountryClick,
-        onFavouriteToggle = viewModel::onFavouriteToggle,
+        onFavouriteToggle = { country -> viewModel.onEvent(DetailsContract.UiEvent.FavouriteToggled(country)) },
         modifier = modifier
     )
 }
