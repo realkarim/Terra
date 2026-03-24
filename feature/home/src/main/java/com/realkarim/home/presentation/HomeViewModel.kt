@@ -29,34 +29,33 @@ class HomeViewModel @Inject constructor(
 
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
     private val _searchQuery = MutableStateFlow("")
-    private val _selectedRegion = MutableStateFlow<String?>(null)
     private val _showOnlyFavourites = MutableStateFlow(false)
+    private val _activeFilters = MutableStateFlow(CountryFilter())
 
     val uiState = combine(
         _loadResult,
         _searchQuery,
-        _selectedRegion,
+        _activeFilters,
         _showOnlyFavourites,
         getFavouriteCountriesUseCase(),
-    ) { loadResult, query, region, onlyFavourites, favourites ->
+    ) { loadResult, query, filters, onlyFavourites, favourites ->
         when (loadResult) {
             LoadResult.Loading -> HomeContract.UiState.Loading
             is LoadResult.Failed -> HomeContract.UiState.Error(loadResult.error)
             is LoadResult.Loaded -> {
-                val favouriteAlphaCodes = favourites.map { it.alphaCode }.toSet()
                 val all = loadResult.countries
-                val regions = all.map { it.region }.distinct().sorted()
+                val favouriteAlphaCodes = favourites.map { it.alphaCode }.toSet()
                 val filtered = all.filter { country ->
-                    (query.isBlank() || country.name.contains(query, ignoreCase = true))
-                        && (region == null || country.region == region)
+                    matchesSearch(country, query)
+                        && matchesFilters(country, filters)
                         && (!onlyFavourites || country.alphaCode in favouriteAlphaCodes)
                 }
                 HomeContract.UiState.Success(
                     countries = filtered,
-                    regions = regions,
                     searchQuery = query,
-                    selectedRegion = region,
                     showOnlyFavourites = onlyFavourites,
+                    activeFilters = filters,
+                    filterOptions = buildFilterOptions(all),
                 )
             }
         }
@@ -79,15 +78,52 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onSearchQueryChange(query: String) {
-        _searchQuery.value = query
+    fun onEvent(event: HomeContract.UiEvent) {
+        when (event) {
+            is HomeContract.UiEvent.SearchQueryChanged -> _searchQuery.value = event.query
+            is HomeContract.UiEvent.FiltersChanged -> _activeFilters.value = event.filters
+            HomeContract.UiEvent.FavouritesFilterToggled -> _showOnlyFavourites.value = !_showOnlyFavourites.value
+            HomeContract.UiEvent.FiltersReset -> _activeFilters.value = CountryFilter()
+        }
     }
 
-    fun onRegionSelected(region: String?) {
-        _selectedRegion.value = if (_selectedRegion.value == region) null else region
+    private fun buildFilterOptions(countries: List<Country>) = FilterOptions(
+        regions = countries.map { it.region }.distinct().sorted(),
+        languages = countries.flatMap { it.languages }.map { it.name }.distinct().sorted(),
+        regionalBlocs = countries.flatMap { it.regionalBlocs }.map { it.name }.distinct().sorted(),
+    )
+
+    private fun matchesSearch(country: Country, query: String): Boolean =
+        query.isBlank() || country.name.contains(query, ignoreCase = true)
+
+    private fun matchesFilters(country: Country, filters: CountryFilter): Boolean {
+        if (filters.selectedRegions.isNotEmpty() && country.region !in filters.selectedRegions) return false
+        if (filters.selectedLanguages.isNotEmpty() &&
+            country.languages.none { it.name in filters.selectedLanguages }) return false
+        filters.populationBucket?.let { bucket ->
+            if (!matchesPopulation(country.population, bucket)) return false
+        }
+        filters.areaBucket?.let { bucket ->
+            if (!matchesArea(country.area, bucket)) return false
+        }
+        if (filters.selectedRegionalBlocs.isNotEmpty() &&
+            country.regionalBlocs.none { it.name in filters.selectedRegionalBlocs }) return false
+        return true
     }
 
-    fun onFavouritesFilterToggle() {
-        _showOnlyFavourites.value = !_showOnlyFavourites.value
+    private fun matchesPopulation(population: Long, bucket: CountryFilter.PopulationBucket): Boolean =
+        when (bucket) {
+            CountryFilter.PopulationBucket.SMALL -> population < 1_000_000L
+            CountryFilter.PopulationBucket.MEDIUM -> population in 1_000_000L..100_000_000L
+            CountryFilter.PopulationBucket.LARGE -> population > 100_000_000L
+        }
+
+    private fun matchesArea(area: Double?, bucket: CountryFilter.AreaBucket): Boolean {
+        if (area == null) return false
+        return when (bucket) {
+            CountryFilter.AreaBucket.SMALL -> area < 10_000.0
+            CountryFilter.AreaBucket.MEDIUM -> area in 10_000.0..500_000.0
+            CountryFilter.AreaBucket.LARGE -> area > 500_000.0
+        }
     }
 }

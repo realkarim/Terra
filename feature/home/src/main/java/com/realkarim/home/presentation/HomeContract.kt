@@ -16,18 +16,19 @@ object HomeContract {
         data object Loading : UiState
         data class Success(
             val countries: List<Country>,
-            val regions: List<String>,
             val searchQuery: String,
-            val selectedRegion: String?,
             val showOnlyFavourites: Boolean,
+            val activeFilters: CountryFilter,
+            val filterOptions: FilterOptions,
         ) : UiState
         data class Error(val error: UiError) : UiState
     }
 
     sealed interface UiEvent {
         data class SearchQueryChanged(val query: String) : UiEvent
-        data class RegionSelected(val region: String?) : UiEvent
+        data class FiltersChanged(val filters: CountryFilter) : UiEvent
         data object FavouritesFilterToggled : UiEvent
+        data object FiltersReset : UiEvent
     }
 
     sealed interface SideEffect

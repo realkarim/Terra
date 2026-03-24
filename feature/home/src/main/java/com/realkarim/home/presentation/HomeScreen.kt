@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,20 +13,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +41,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -62,9 +69,10 @@ fun HomeScreen(
     HomeScreen(
         uiState = uiState,
         onCountryClick = { country -> navigation.onCountryClick(country.alphaCode) },
-        onSearchQueryChange = viewModel::onSearchQueryChange,
-        onRegionSelected = viewModel::onRegionSelected,
-        onFavouritesFilterToggle = viewModel::onFavouritesFilterToggle,
+        onSearchQueryChange = { viewModel.onEvent(HomeContract.UiEvent.SearchQueryChanged(it)) },
+        onFavouritesFilterToggle = { viewModel.onEvent(HomeContract.UiEvent.FavouritesFilterToggled) },
+        onFiltersChanged = { viewModel.onEvent(HomeContract.UiEvent.FiltersChanged(it)) },
+        onFiltersReset = { viewModel.onEvent(HomeContract.UiEvent.FiltersReset) },
         modifier = modifier,
     )
 }
@@ -75,10 +83,13 @@ private fun HomeScreen(
     uiState: HomeContract.UiState,
     onCountryClick: (Country) -> Unit,
     onSearchQueryChange: (String) -> Unit,
-    onRegionSelected: (String?) -> Unit,
     onFavouritesFilterToggle: () -> Unit,
+    onFiltersChanged: (CountryFilter) -> Unit,
+    onFiltersReset: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showFilterSheet by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier,
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -86,10 +97,14 @@ private fun HomeScreen(
     ) { innerPadding ->
         when (uiState) {
             is HomeContract.UiState.Loading -> LoadingContent(
-                modifier = Modifier.fillMaxSize().padding(innerPadding)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             )
             is HomeContract.UiState.Success -> Column(
-                modifier = Modifier.fillMaxSize().padding(innerPadding)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
                 SearchField(
                     query = uiState.searchQuery,
@@ -98,12 +113,12 @@ private fun HomeScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                 )
-                RegionFilters(
-                    regions = uiState.regions,
-                    selectedRegion = uiState.selectedRegion,
-                    onRegionSelected = onRegionSelected,
+                FilterRow(
                     showOnlyFavourites = uiState.showOnlyFavourites,
                     onFavouritesFilterToggle = onFavouritesFilterToggle,
+                    activeFilterCount = uiState.activeFilters.activeCount,
+                    onFilterClick = { showFilterSheet = true },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 )
                 if (uiState.countries.isEmpty()) {
                     EmptySearchContent(modifier = Modifier.fillMaxSize())
@@ -114,10 +129,22 @@ private fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
+
+                if (showFilterSheet) {
+                    FilterBottomSheet(
+                        activeFilters = uiState.activeFilters,
+                        filterOptions = uiState.filterOptions,
+                        onFiltersChanged = onFiltersChanged,
+                        onFiltersReset = onFiltersReset,
+                        onDismiss = { showFilterSheet = false },
+                    )
+                }
             }
             is HomeContract.UiState.Error -> ErrorContent(
                 error = uiState.error,
-                modifier = Modifier.fillMaxSize().padding(innerPadding)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             )
         }
     }
@@ -184,29 +211,41 @@ private fun SearchField(
 }
 
 @Composable
-private fun RegionFilters(
-    regions: List<String>,
-    selectedRegion: String?,
-    onRegionSelected: (String?) -> Unit,
+private fun FilterRow(
     showOnlyFavourites: Boolean,
     onFavouritesFilterToggle: () -> Unit,
+    activeFilterCount: Int,
+    onFilterClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+    Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        item {
+        FilterChip(
+            selected = showOnlyFavourites,
+            onClick = onFavouritesFilterToggle,
+            label = { Text("Favourites") },
+        )
+        BadgedBox(
+            badge = {
+                if (activeFilterCount > 0) {
+                    Badge { Text("$activeFilterCount") }
+                }
+            }
+        ) {
             FilterChip(
-                selected = showOnlyFavourites,
-                onClick = onFavouritesFilterToggle,
-                label = { Text("Favourites") },
-            )
-        }
-        items(regions) { region ->
-            FilterChip(
-                selected = selectedRegion == region,
-                onClick = { onRegionSelected(region) },
-                label = { Text(region) },
+                selected = activeFilterCount > 0,
+                onClick = onFilterClick,
+                label = { Text("Filters") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = null,
+                        modifier = Modifier.size(FilterChipDefaults.IconSize),
+                    )
+                },
             )
         }
     }
@@ -257,7 +296,7 @@ private fun EmptySearchContent(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = "Try a different name or region",
+                text = "Try a different name or filter",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -383,32 +422,16 @@ fun HomeScreenPreview() {
                     languages = emptyList(),
                     regionalBlocs = emptyList()
                 ),
-                Country(
-                    name = "United Kingdom",
-                    alphaCode = "GBR",
-                    callingCodes = listOf("44"),
-                    capital = "London",
-                    subregion = "Northern Europe",
-                    region = "Europe",
-                    population = 67886011,
-                    area = 243610.0,
-                    timezones = listOf("UTC+00:00"),
-                    borders = emptyList(),
-                    nativeName = "United Kingdom of Great Britain and Northern Ireland",
-                    flagUrl = "https://flagcdn.com/gb.png",
-                    currencies = emptyList(),
-                    languages = emptyList(),
-                    regionalBlocs = emptyList()
-                )
             ),
-            regions = listOf("Americas", "Europe"),
             searchQuery = "",
-            selectedRegion = null,
             showOnlyFavourites = false,
+            activeFilters = CountryFilter(),
+            filterOptions = FilterOptions(regions = listOf("Americas", "Europe")),
         ),
         onCountryClick = {},
         onSearchQueryChange = {},
-        onRegionSelected = {},
         onFavouritesFilterToggle = {},
+        onFiltersChanged = {},
+        onFiltersReset = {},
     )
 }
