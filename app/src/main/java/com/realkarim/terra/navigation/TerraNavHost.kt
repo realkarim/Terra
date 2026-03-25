@@ -45,6 +45,9 @@ fun TerraNavHost(
                 DetailsScreen(
                     alphaCode = it.alphaCode,
                     navigation = object : DetailsNavigation {
+                        override fun onBack() {
+                            backStack.removeLastOrNull()
+                        }
                         override fun onBorderCountryClick(alphaCode: String) {
                             backStack.add(DetailsRoute(alphaCode = alphaCode))
                         }

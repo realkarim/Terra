@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
@@ -58,6 +59,7 @@ fun DetailsScreen(
 
     DetailsScreen(
         uiState = uiState,
+        onBack = navigation::onBack,
         onBorderClick = navigation::onBorderCountryClick,
         onFavouriteToggle = { country -> viewModel.onEvent(DetailsContract.UiEvent.FavouriteToggled(country)) },
         modifier = modifier
@@ -67,6 +69,7 @@ fun DetailsScreen(
 @Composable
 private fun DetailsScreen(
     uiState: DetailsContract.UiState,
+    onBack: () -> Unit,
     onBorderClick: (String) -> Unit,
     onFavouriteToggle: (Country) -> Unit,
     modifier: Modifier = Modifier
@@ -82,6 +85,7 @@ private fun DetailsScreen(
             is DetailsContract.UiState.Success -> Details(
                 country = uiState.country,
                 isFavourite = uiState.isFavourite,
+                onBack = onBack,
                 onBorderClick = onBorderClick,
                 onFavouriteToggle = onFavouriteToggle,
                 modifier = Modifier.padding(innerPaddings)
@@ -122,6 +126,7 @@ private fun ErrorContent(error: DetailsContract.UiError, modifier: Modifier = Mo
 private fun Details(
     country: Country,
     isFavourite: Boolean,
+    onBack: () -> Unit,
     onBorderClick: (String) -> Unit,
     onFavouriteToggle: (Country) -> Unit,
     modifier: Modifier = Modifier
@@ -131,7 +136,7 @@ private fun Details(
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
-        FlagHero(country = country, isFavourite = isFavourite, onFavouriteToggle = onFavouriteToggle)
+        FlagHero(country = country, isFavourite = isFavourite, onBack = onBack, onFavouriteToggle = onFavouriteToggle)
 
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -194,13 +199,14 @@ private fun Details(
 private fun FlagHero(
     country: Country,
     isFavourite: Boolean,
+    onBack: () -> Unit,
     onFavouriteToggle: (Country) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(260.dp)
+            .height(320.dp)
     ) {
         AsyncImage(
             model = country.flagUrl,
@@ -208,6 +214,16 @@ private fun FlagHero(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White,
+            )
+        }
         IconButton(
             onClick = { onFavouriteToggle(country) },
             modifier = Modifier.align(Alignment.TopEnd)
@@ -358,6 +374,7 @@ private fun DetailsScreenPreview() {
             ),
             isFavourite = false,
         ),
+        onBack = {},
         onBorderClick = {},
         onFavouriteToggle = {},
     )
