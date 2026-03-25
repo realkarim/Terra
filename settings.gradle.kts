@@ -28,6 +28,7 @@ include(":app")
 // core
 include(":core:designsystem")
 include(":core:network")
+include(":core:data:common")
 include(":core:data:country")
 include(":core:data:favourites")
 include(":core:domain:common")

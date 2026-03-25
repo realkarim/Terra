@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-    api(project(":core:domain:common")) // exposing
+    api(project(":core:data:common"))
     api(project(":core:domain:country"))  // exposing
     implementation(project(":core:network"))
     // KAPT

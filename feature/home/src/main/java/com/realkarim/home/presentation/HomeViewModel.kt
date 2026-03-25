@@ -28,6 +28,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
+    private var _availableFilters = HomeContract.AvailableFilters()
     private val _searchQuery = MutableStateFlow("")
     private val _showOnlyFavourites = MutableStateFlow(false)
     private val _activeFilters = MutableStateFlow(HomeContract.ActiveFilters())
@@ -55,7 +56,7 @@ class HomeViewModel @Inject constructor(
                     searchQuery = query,
                     showOnlyFavourites = onlyFavourites,
                     activeFilters = filters,
-                    filterOptions = buildAvailableFilters(all),
+                    filterOptions = _availableFilters,
                 )
             }
         }
@@ -72,7 +73,10 @@ class HomeViewModel @Inject constructor(
     private fun loadCountries() {
         viewModelScope.launch {
             _loadResult.value = when (val result = getAllCountriesUseCase()) {
-                is Result.Success -> LoadResult.Loaded(result.data)
+                is Result.Success -> {
+                    _availableFilters = buildAvailableFilters(result.data)
+                    LoadResult.Loaded(result.data)
+                }
                 is Result.Failure -> LoadResult.Failed(errorMapper.map(result.error))
             }
         }

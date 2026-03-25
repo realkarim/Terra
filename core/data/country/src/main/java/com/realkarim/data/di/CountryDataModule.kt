@@ -16,7 +16,7 @@ const val BASE_URL = "https://www.apicountries.com/"
 
 @Module
 @InstallIn(SingletonComponent::class)
-class DataModule {
+class CountryDataModule {
     @Provides
     @Singleton
     fun provideCountryService(serviceFactory: ServiceFactory): CountryService {
