@@ -26,9 +26,9 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun FilterBottomSheet(
-    activeFilters: CountryFilter,
-    filterOptions: FilterOptions,
-    onFiltersChanged: (CountryFilter) -> Unit,
+    activeFilters: HomeContract.ActiveFilters,
+    filterOptions: HomeContract.AvailableFilters,
+    onFiltersChanged: (HomeContract.ActiveFilters) -> Unit,
     onFiltersReset: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -77,7 +77,7 @@ fun FilterBottomSheet(
 
             FilterSection(title = "Population") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CountryFilter.PopulationBucket.entries.forEach { bucket ->
+                    HomeContract.ActiveFilters.PopulationBucket.entries.forEach { bucket ->
                         FilterChip(
                             selected = activeFilters.populationBucket == bucket,
                             onClick = {
@@ -92,7 +92,7 @@ fun FilterBottomSheet(
 
             FilterSection(title = "Area") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CountryFilter.AreaBucket.entries.forEach { bucket ->
+                    HomeContract.ActiveFilters.AreaBucket.entries.forEach { bucket ->
                         FilterChip(
                             selected = activeFilters.areaBucket == bucket,
                             onClick = {
@@ -165,8 +165,8 @@ private fun <T> Set<T>.toggle(item: T): Set<T> =
 @Composable
 private fun FilterBottomSheetPreview() {
     FilterBottomSheet(
-        activeFilters = CountryFilter(),
-        filterOptions = FilterOptions(
+        activeFilters = HomeContract.ActiveFilters(),
+        filterOptions = HomeContract.AvailableFilters(
             regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania"),
             languages = listOf("Arabic", "English", "French", "German", "Japanese", "Portuguese", "Spanish"),
             regionalBlocs = listOf("African Union", "European Union", "NAFTA"),
@@ -181,12 +181,12 @@ private fun FilterBottomSheetPreview() {
 @Composable
 private fun FilterBottomSheetActivePreview() {
     FilterBottomSheet(
-        activeFilters = CountryFilter(
+        activeFilters = HomeContract.ActiveFilters(
             selectedRegions = setOf("Europe"),
             selectedLanguages = setOf("French", "German"),
-            populationBucket = CountryFilter.PopulationBucket.MEDIUM,
+            populationBucket = HomeContract.ActiveFilters.PopulationBucket.MEDIUM,
         ),
-        filterOptions = FilterOptions(
+        filterOptions = HomeContract.AvailableFilters(
             regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania"),
             languages = listOf("Arabic", "English", "French", "German", "Japanese", "Portuguese", "Spanish"),
             regionalBlocs = listOf("African Union", "European Union", "NAFTA"),

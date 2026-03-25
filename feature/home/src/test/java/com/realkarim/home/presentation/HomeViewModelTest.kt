@@ -107,7 +107,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
-        vm.onEvent(HomeContract.UiEvent.FiltersChanged(CountryFilter(selectedRegions = setOf("Europe"))))
+        vm.onEvent(HomeContract.UiEvent.FiltersChanged(HomeContract.ActiveFilters(selectedRegions = setOf("Europe"))))
         advanceUntilIdle()
 
         val state = vm.uiState.value as HomeContract.UiState.Success
@@ -123,7 +123,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
-        vm.onEvent(HomeContract.UiEvent.FiltersChanged(CountryFilter(selectedRegions = setOf("Europe"))))
+        vm.onEvent(HomeContract.UiEvent.FiltersChanged(HomeContract.ActiveFilters(selectedRegions = setOf("Europe"))))
         vm.onEvent(HomeContract.UiEvent.FiltersReset)
         advanceUntilIdle()
 
@@ -141,7 +141,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
-        vm.onEvent(HomeContract.UiEvent.FiltersChanged(CountryFilter(selectedLanguages = setOf("German"))))
+        vm.onEvent(HomeContract.UiEvent.FiltersChanged(HomeContract.ActiveFilters(selectedLanguages = setOf("German"))))
         advanceUntilIdle()
 
         val state = vm.uiState.value as HomeContract.UiState.Success
@@ -158,7 +158,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
-        vm.onEvent(HomeContract.UiEvent.FiltersChanged(CountryFilter(populationBucket = CountryFilter.PopulationBucket.SMALL)))
+        vm.onEvent(HomeContract.UiEvent.FiltersChanged(HomeContract.ActiveFilters(populationBucket = HomeContract.ActiveFilters.PopulationBucket.SMALL)))
         advanceUntilIdle()
 
         val state = vm.uiState.value as HomeContract.UiState.Success
@@ -175,7 +175,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
-        vm.onEvent(HomeContract.UiEvent.FiltersChanged(CountryFilter(areaBucket = CountryFilter.AreaBucket.SMALL)))
+        vm.onEvent(HomeContract.UiEvent.FiltersChanged(HomeContract.ActiveFilters(areaBucket = HomeContract.ActiveFilters.AreaBucket.SMALL)))
         advanceUntilIdle()
 
         val state = vm.uiState.value as HomeContract.UiState.Success
@@ -192,7 +192,7 @@ class HomeViewModelTest {
         val vm = viewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
-        vm.onEvent(HomeContract.UiEvent.FiltersChanged(CountryFilter(selectedRegionalBlocs = setOf("European Union"))))
+        vm.onEvent(HomeContract.UiEvent.FiltersChanged(HomeContract.ActiveFilters(selectedRegionalBlocs = setOf("European Union"))))
         advanceUntilIdle()
 
         val state = vm.uiState.value as HomeContract.UiState.Success
@@ -210,9 +210,9 @@ class HomeViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
         vm.onEvent(HomeContract.UiEvent.FiltersChanged(
-            CountryFilter(
+            HomeContract.ActiveFilters(
                 selectedRegions = setOf("Europe"),
-                populationBucket = CountryFilter.PopulationBucket.MEDIUM,
+                populationBucket = HomeContract.ActiveFilters.PopulationBucket.MEDIUM,
             )
         ))
         advanceUntilIdle()

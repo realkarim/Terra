@@ -30,7 +30,7 @@ class HomeViewModel @Inject constructor(
     private val _loadResult = MutableStateFlow<LoadResult>(LoadResult.Loading)
     private val _searchQuery = MutableStateFlow("")
     private val _showOnlyFavourites = MutableStateFlow(false)
-    private val _activeFilters = MutableStateFlow(CountryFilter())
+    private val _activeFilters = MutableStateFlow(HomeContract.ActiveFilters())
 
     val uiState = combine(
         _loadResult,
@@ -55,7 +55,7 @@ class HomeViewModel @Inject constructor(
                     searchQuery = query,
                     showOnlyFavourites = onlyFavourites,
                     activeFilters = filters,
-                    filterOptions = buildFilterOptions(all),
+                    filterOptions = buildAvailableFilters(all),
                 )
             }
         }
@@ -83,11 +83,11 @@ class HomeViewModel @Inject constructor(
             is HomeContract.UiEvent.SearchQueryChanged -> _searchQuery.value = event.query
             is HomeContract.UiEvent.FiltersChanged -> _activeFilters.value = event.filters
             HomeContract.UiEvent.FavouritesFilterToggled -> _showOnlyFavourites.value = !_showOnlyFavourites.value
-            HomeContract.UiEvent.FiltersReset -> _activeFilters.value = CountryFilter()
+            HomeContract.UiEvent.FiltersReset -> _activeFilters.value = HomeContract.ActiveFilters()
         }
     }
 
-    private fun buildFilterOptions(countries: List<Country>) = FilterOptions(
+    private fun buildAvailableFilters(countries: List<Country>) = HomeContract.AvailableFilters(
         regions = countries.map { it.region }.distinct().sorted(),
         languages = countries.flatMap { it.languages }.map { it.name }.distinct().sorted(),
         regionalBlocs = countries.flatMap { it.regionalBlocs }.map { it.name }.distinct().sorted(),
@@ -96,7 +96,7 @@ class HomeViewModel @Inject constructor(
     private fun matchesSearch(country: Country, query: String): Boolean =
         query.isBlank() || country.name.contains(query, ignoreCase = true)
 
-    private fun matchesFilters(country: Country, filters: CountryFilter): Boolean {
+    private fun matchesFilters(country: Country, filters: HomeContract.ActiveFilters): Boolean {
         if (filters.selectedRegions.isNotEmpty() && country.region !in filters.selectedRegions) return false
         if (filters.selectedLanguages.isNotEmpty() &&
             country.languages.none { it.name in filters.selectedLanguages }) return false
@@ -111,19 +111,19 @@ class HomeViewModel @Inject constructor(
         return true
     }
 
-    private fun matchesPopulation(population: Long, bucket: CountryFilter.PopulationBucket): Boolean =
+    private fun matchesPopulation(population: Long, bucket: HomeContract.ActiveFilters.PopulationBucket): Boolean =
         when (bucket) {
-            CountryFilter.PopulationBucket.SMALL -> population < 1_000_000L
-            CountryFilter.PopulationBucket.MEDIUM -> population in 1_000_000L..100_000_000L
-            CountryFilter.PopulationBucket.LARGE -> population > 100_000_000L
+            HomeContract.ActiveFilters.PopulationBucket.SMALL -> population < 1_000_000L
+            HomeContract.ActiveFilters.PopulationBucket.MEDIUM -> population in 1_000_000L..100_000_000L
+            HomeContract.ActiveFilters.PopulationBucket.LARGE -> population > 100_000_000L
         }
 
-    private fun matchesArea(area: Double?, bucket: CountryFilter.AreaBucket): Boolean {
+    private fun matchesArea(area: Double?, bucket: HomeContract.ActiveFilters.AreaBucket): Boolean {
         if (area == null) return false
         return when (bucket) {
-            CountryFilter.AreaBucket.SMALL -> area < 10_000.0
-            CountryFilter.AreaBucket.MEDIUM -> area in 10_000.0..500_000.0
-            CountryFilter.AreaBucket.LARGE -> area > 500_000.0
+            HomeContract.ActiveFilters.AreaBucket.SMALL -> area < 10_000.0
+            HomeContract.ActiveFilters.AreaBucket.MEDIUM -> area in 10_000.0..500_000.0
+            HomeContract.ActiveFilters.AreaBucket.LARGE -> area > 500_000.0
         }
     }
 }
