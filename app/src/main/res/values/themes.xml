@@ -1,10 +1,5 @@
 <resources>
     <style name="Theme.Terra" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#1B56B0</item>
-        <item name="colorPrimaryVariant">#0F4492</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#9E4300</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
