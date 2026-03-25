@@ -5,8 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation3.runtime.rememberNavBackStack
+import com.realkarim.designsystem.theme.TerraTheme
 import com.realkarim.terra.navigation.TerraNavHost
-import com.realkarim.terra.theme.TerraTheme
 import com.realkarim.welcome.presentation.WelcomeRoute
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val backStack = rememberNavBackStack(WelcomeRoute)
-            TerraTheme(dynamicColor = false) {
+            TerraTheme {
                 TerraNavHost(backStack = backStack)
             }
         }

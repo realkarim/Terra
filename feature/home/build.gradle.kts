@@ -35,6 +35,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
     implementation(project(":core:domain:common"))
     implementation(project(":core:domain:country"))
     implementation(project(":core:domain:favourites"))

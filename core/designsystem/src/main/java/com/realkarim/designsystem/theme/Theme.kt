@@ -1,4 +1,4 @@
-package com.realkarim.terra.theme
+package com.realkarim.designsystem.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

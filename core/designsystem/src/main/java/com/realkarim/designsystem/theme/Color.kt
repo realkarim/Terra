@@ -1,9 +1,8 @@
-package com.realkarim.terra.theme
+package com.realkarim.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
 // ── Midnight Blue — Primary tonal palette ─────────────────────────────────
-// Seed: #1B4E8A
 internal val MidnightBlue10 = Color(0xFF001849)
 internal val MidnightBlue20 = Color(0xFF002D72)
 internal val MidnightBlue30 = Color(0xFF0F4492)
@@ -13,7 +12,6 @@ internal val MidnightBlue90 = Color(0xFFDAE2FF)
 internal val MidnightBlue95 = Color(0xFFEEF0FF)
 
 // ── Burnt Orange — Secondary tonal palette ────────────────────────────────
-// Seed: #C8601A
 internal val BurntOrange10 = Color(0xFF3A1200)
 internal val BurntOrange20 = Color(0xFF5C2200)
 internal val BurntOrange30 = Color(0xFF7C3200)
@@ -22,7 +20,6 @@ internal val BurntOrange80 = Color(0xFFFFB787)
 internal val BurntOrange90 = Color(0xFFFFDBCA)
 
 // ── Forest Green — Tertiary tonal palette ─────────────────────────────────
-// Seed: #2D6A4F
 internal val ForestGreen10 = Color(0xFF002117)
 internal val ForestGreen20 = Color(0xFF003A2A)
 internal val ForestGreen30 = Color(0xFF005140)

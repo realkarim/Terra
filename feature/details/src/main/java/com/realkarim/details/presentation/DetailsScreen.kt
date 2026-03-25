@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.realkarim.designsystem.theme.TerraTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.realkarim.country.model.Country
@@ -353,6 +354,7 @@ private fun ChipSection(
 @Preview
 @Composable
 private fun DetailsScreenPreview() {
+    TerraTheme {
     DetailsScreen(
         uiState = DetailsContract.UiState.Success(
             country = Country(
@@ -378,4 +380,5 @@ private fun DetailsScreenPreview() {
         onBorderClick = {},
         onFavouriteToggle = {},
     )
+    }
 }
