@@ -19,13 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.realkarim.designsystem.theme.TerraTheme
 
 @Composable
 fun WelcomeScreen(
@@ -58,7 +59,7 @@ private fun WelcomeScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        MaterialTheme.colorScheme.primaryContainer,
                         MaterialTheme.colorScheme.surface
                     )
                 )
@@ -80,10 +81,10 @@ private fun WelcomeScreen(
                         .size(120.dp)
                         .clip(CircleShape)
                         .background(
-                            Brush.radialGradient(
+                            Brush.linearGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.secondary
+                                    MaterialTheme.colorScheme.tertiary,
+                                    MaterialTheme.colorScheme.primary
                                 )
                             )
                         ),
@@ -163,7 +164,9 @@ private fun FeatureItem(text: String) {
 @Preview
 @Composable
 private fun WelcomeScreenPreview() {
-    WelcomeScreen(
-        onGetStartedClick = {}
-    )
+    TerraTheme {
+        WelcomeScreen(
+            onGetStartedClick = {}
+        )
+    }
 }

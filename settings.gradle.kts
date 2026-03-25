@@ -26,6 +26,7 @@ rootProject.name = "Terra"
 include(":app")
 
 // core
+include(":core:designsystem")
 include(":core:network")
 include(":core:data:country")
 include(":core:data:favourites")

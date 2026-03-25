@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.verticalScroll
+import com.realkarim.designsystem.theme.TerraTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -164,35 +165,39 @@ private fun <T> Set<T>.toggle(item: T): Set<T> =
 @Preview(showBackground = true, name = "No active filters")
 @Composable
 private fun FilterBottomSheetPreview() {
-    FilterBottomSheet(
-        activeFilters = HomeContract.ActiveFilters(),
-        filterOptions = HomeContract.AvailableFilters(
-            regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania"),
-            languages = listOf("Arabic", "English", "French", "German", "Japanese", "Portuguese", "Spanish"),
-            regionalBlocs = listOf("African Union", "European Union", "NAFTA"),
-        ),
-        onFiltersChanged = {},
-        onFiltersReset = {},
-        onDismiss = {},
-    )
+    TerraTheme {
+        FilterBottomSheet(
+            activeFilters = HomeContract.ActiveFilters(),
+            filterOptions = HomeContract.AvailableFilters(
+                regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania"),
+                languages = listOf("Arabic", "English", "French", "German", "Japanese", "Portuguese", "Spanish"),
+                regionalBlocs = listOf("African Union", "European Union", "NAFTA"),
+            ),
+            onFiltersChanged = {},
+            onFiltersReset = {},
+            onDismiss = {},
+        )
+    }
 }
 
 @Preview(showBackground = true, name = "With active filters")
 @Composable
 private fun FilterBottomSheetActivePreview() {
-    FilterBottomSheet(
-        activeFilters = HomeContract.ActiveFilters(
-            selectedRegions = setOf("Europe"),
-            selectedLanguages = setOf("French", "German"),
-            populationBucket = HomeContract.ActiveFilters.PopulationBucket.MEDIUM,
-        ),
-        filterOptions = HomeContract.AvailableFilters(
-            regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania"),
-            languages = listOf("Arabic", "English", "French", "German", "Japanese", "Portuguese", "Spanish"),
-            regionalBlocs = listOf("African Union", "European Union", "NAFTA"),
-        ),
-        onFiltersChanged = {},
-        onFiltersReset = {},
-        onDismiss = {},
-    )
+    TerraTheme {
+        FilterBottomSheet(
+            activeFilters = HomeContract.ActiveFilters(
+                selectedRegions = setOf("Europe"),
+                selectedLanguages = setOf("French", "German"),
+                populationBucket = HomeContract.ActiveFilters.PopulationBucket.MEDIUM,
+            ),
+            filterOptions = HomeContract.AvailableFilters(
+                regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania"),
+                languages = listOf("Arabic", "English", "French", "German", "Japanese", "Portuguese", "Spanish"),
+                regionalBlocs = listOf("African Union", "European Union", "NAFTA"),
+            ),
+            onFiltersChanged = {},
+            onFiltersReset = {},
+            onDismiss = {},
+        )
+    }
 }

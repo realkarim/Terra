@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -26,7 +27,6 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.realkarim.designsystem.theme.TerraTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.realkarim.country.model.Country
@@ -89,14 +92,15 @@ private fun HomeScreen(
     modifier: Modifier = Modifier,
 ) {
     var showFilterSheet by remember { mutableStateOf(false) }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { HomeTopBar() },
+        topBar = { HomeTopBar(scrollBehavior = scrollBehavior) },
     ) { innerPadding ->
         when (uiState) {
-            is HomeContract.UiState.Loading -> LoadingContent(
+            is HomeContract.UiState.Loading -> ShimmerLoadingGrid(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -152,7 +156,7 @@ private fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeTopBar() {
+private fun HomeTopBar(scrollBehavior: TopAppBarScrollBehavior) {
     TopAppBar(
         title = {
             Column {
@@ -171,6 +175,7 @@ private fun HomeTopBar() {
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
+        scrollBehavior = scrollBehavior,
     )
 }
 
@@ -252,13 +257,6 @@ private fun FilterRow(
 }
 
 @Composable
-private fun LoadingContent(modifier: Modifier = Modifier) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
 private fun ErrorContent(error: HomeContract.UiError, modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(
@@ -310,15 +308,21 @@ private fun CountriesGrid(
     onCountryClick: (Country) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val gridState = rememberLazyGridState()
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
+        state = gridState,
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items(countries) { country ->
-            CountryCard(country = country, onClick = { onCountryClick(country) })
+        items(countries, key = { it.alphaCode }) { country ->
+            CountryCard(
+                country = country,
+                onClick = { onCountryClick(country) },
+                modifier = Modifier.animateItem(),
+            )
         }
     }
 }
@@ -327,10 +331,11 @@ private fun CountriesGrid(
 fun CountryCard(
     country: Country,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .aspectRatio(3f / 4f),
         shape = MaterialTheme.shapes.large,
@@ -385,6 +390,7 @@ fun CountryCard(
 @Preview
 @Composable
 fun HomeScreenPreview() {
+    TerraTheme {
     HomeScreen(
         uiState = HomeContract.UiState.Success(
             countries = listOf(
@@ -434,4 +440,5 @@ fun HomeScreenPreview() {
         onFiltersChanged = {},
         onFiltersReset = {},
     )
+    }
 }
